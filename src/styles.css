@@ -990,6 +990,7 @@ dialog::backdrop {
   margin: 15px 0;
 }
 .demo-account {
+  margin-bottom: 18px;
   background: #f1f5ed;
   padding: 18px;
   border-radius: 8px;
@@ -1000,6 +1001,8 @@ dialog::backdrop {
   font-size: 12px;
 }
 .demo-account small {
+  display: block;
+  margin-top: 6px;
   color: var(--muted);
 }
 /* Workspace */

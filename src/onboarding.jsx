@@ -23,7 +23,7 @@ const f = (key, label, type = "text", options) => ({
 const account = [
   f("email", "Email", "email"),
   f("phone", "Contact phone", "tel"),
-  f("password", "Demo password", "password"),
+  f("password", "Password", "password"),
 ];
 const identity = [
   f("name", "Full legal name"),
@@ -186,9 +186,9 @@ const investorSteps = [
   ["Review", []],
 ];
 const consentFields = [
-  ["terms", "I accept the demo terms."],
+  ["terms", "I accept the terms."],
   ["identityConsent", "I consent to identity verification."],
-  ["dataConsent", "I consent to processing this demo profile."],
+  ["dataConsent", "I consent to processing this profile."],
 ];
 export function Onboarding({ role, go }) {
   const { state, update, drafts, setDrafts, files, submissions, notify } =
@@ -239,7 +239,7 @@ export function Onboarding({ role, go }) {
       )
         errs[field.key] = "Enter a valid contact phone number.";
       else if (field.type === "password" && value.length < 8)
-        errs[field.key] = "Use at least 8 characters for this demo.";
+        errs[field.key] = "Use at least 8 characters for your password.";
       else if (
         field.type === "number" &&
         (!Number.isFinite(Number(value)) || Number(value) <= 0)
@@ -305,17 +305,15 @@ export function Onboarding({ role, go }) {
             c.kind === (investor ? "Investor identity" : "Farm verification"),
         );
         const submissionId = existing?.id || uid();
-        const summary = steps
-          .slice(0, -1)
-          .map(([title, fields]) => ({
-            title,
-            fields: fields
-              .filter((f) => f.type !== "password")
-              .map((f) => ({
-                label: f.label,
-                value: f.type === "file" ? values[f.key]?.name : values[f.key],
-              })),
-          }));
+        const summary = steps.slice(0, -1).map(([title, fields]) => ({
+          title,
+          fields: fields
+            .filter((f) => f.type !== "password")
+            .map((f) => ({
+              label: f.label,
+              value: f.type === "file" ? values[f.key]?.name : values[f.key],
+            })),
+        }));
         summary.push({
           title: "Consent decisions",
           fields: consents.map(([key, label]) => ({
@@ -336,7 +334,7 @@ export function Onboarding({ role, go }) {
             farmId: investor ? null : 1,
             role: caseRole,
             kind: investor ? "Investor identity" : "Farm verification",
-            name: investor ? "Investor demo profile" : values.farmName,
+            name: investor ? "Investor profile" : values.farmName,
             status: "Submitted",
             notes: [],
           });
@@ -417,12 +415,12 @@ export function Onboarding({ role, go }) {
         s.notifications.unshift({
           id: uid(),
           role: "admin",
-          text: "A demo verification submission is ready for review.",
+          text: "A verification submission is ready for review.",
           page: "kyc",
           read: false,
         });
       },
-      "Profile submitted for simulated verification",
+      "Profile submitted for verification",
       role,
     );
     setDrafts((a) => {
@@ -520,14 +518,14 @@ export function Onboarding({ role, go }) {
               checked={showPassword}
               onChange={(e) => setShowPassword(e.target.checked)}
             />
-            Show demo password
+            Show password
           </label>
         )}
         {title === "Consent" && (
           <>
             <div className="actions">
               <Button type="button" onClick={() => setPolicy("Terms")}>
-                Read demo terms
+                Read terms
               </Button>
               <Button type="button" onClick={() => setPolicy("Privacy")}>
                 Read privacy information
@@ -595,8 +593,7 @@ export function Onboarding({ role, go }) {
                 checked={!!values.accuracy}
                 onChange={(e) => change("accuracy", e.target.checked)}
               />
-              I confirm that the information supplied is accurate for this
-              demonstration.
+              I confirm that the information supplied is accurate.
             </label>
             {errors.accuracy && <p className="error">{errors.accuracy}</p>}
           </>
@@ -625,11 +622,11 @@ export function Onboarding({ role, go }) {
         </div>
       </form>
       {policy && (
-        <Modal title={`${policy} — prototype`} onClose={() => setPolicy("")}>
+        <Modal title={policy} onClose={() => setPolicy("")}>
           <p>
             {policy === "Terms"
-              ? "This demonstration has no financial transactions or binding financing commitments. Verification decisions are simulated and do not guarantee credit, ownership or investment outcomes."
-              : "Use fictional information only. Demo interactions are stored in this browser. Passwords, identity drafts and uploaded file contents are kept in memory, not persisted or transmitted. Refresh clears those sensitive inputs. Partner sharing is optional and applies only to relevant farm documents."}
+              ? "No financial transactions or binding financing commitments are made here. Verification decisions are simulated and do not guarantee credit, ownership or investment outcomes."
+              : "Use sample information only. Activity is stored in this browser. Passwords, identity drafts and uploaded file contents are kept in memory, not persisted or transmitted. Refresh clears those sensitive inputs. Partner sharing is optional and applies only to relevant farm documents."}
           </p>
         </Modal>
       )}
@@ -645,7 +642,7 @@ export function Verification({ role, go }) {
     <>
       <Heading
         title="Verification progress"
-        description="Track review decisions and respond to requests. All checks are simulated."
+        description="Track review decisions and respond to requests."
       >
         <Button primary onClick={() => go("onboarding")}>
           Complete / update profile

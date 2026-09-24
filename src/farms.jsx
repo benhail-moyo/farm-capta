@@ -97,7 +97,7 @@ export function Discovery({ go }) {
       <Heading
         eyebrow="Agricultural intelligence"
         title="Discover farms"
-        description="Find the evidence behind the opportunity. All profiles are fictional."
+        description="Find the evidence behind the opportunity."
       />
       <div className="card filter-panel">
         <div className="form-grid">
@@ -293,7 +293,7 @@ export function Documents({ role, farmId = 1, embedded = false }) {
               disabled={type === "Identity"}
               onChange={(e) => setShared(e.target.checked)}
             />
-            Share this non-identity document with demo financing partners
+            Share this non-identity document with financing partners
           </label>
           <Button primary disabled={busy}>
             <Upload size={16} />
@@ -430,7 +430,7 @@ export function Documents({ role, farmId = 1, embedded = false }) {
       )}
       {remove && (
         <Modal title="Remove this document?" onClose={() => setRemove(null)}>
-          <p>{remove.name} will be removed from this demo library.</p>
+          <p>{remove.name} will be removed from your library.</p>
           <Button onClick={() => setRemove(null)}>Keep document</Button>{" "}
           <Button
             primary
@@ -614,7 +614,7 @@ export function FarmProfile({ role, go, id = 1, publicView = false }) {
           <p>
             {farm.size} hectares in {farm.loc}.
           </p>
-          <p>Demo coordinates: {farm.gps}</p>
+          <p>Coordinates: {farm.gps}</p>
           <p className="notice">
             The supplied tenure document is recorded as evidence and is not
             automatically equivalent to title ownership.
@@ -694,7 +694,7 @@ export function FarmProfile({ role, go, id = 1, publicView = false }) {
                 "Declared in the sample assessment; further evidence required."}
             </dd>
           </dl>
-          <Button onClick={() => go("messages")}>Open demo inbox</Button>
+          <Button onClick={() => go("messages")}>Open inbox</Button>
         </div>
       )}
       {tab === "Documents" && (

@@ -31,11 +31,8 @@ async function navigate(role, path) {
 }
 async function switchRole(role, path = "overview") {
   await page.goto(`${base}/#/public/signin`);
-  await page.getByRole("combobox", { name: "Demo role" }).selectOption(role);
-  await page
-    .getByLabel("I understand that this is a local demonstration.")
-    .check();
-  await page.getByRole("button", { name: "Enter demo workspace" }).click();
+  await page.getByRole("combobox", { name: "Workspace" }).selectOption(role);
+  await page.getByRole("button", { name: "Enter workspace" }).click();
   await page.waitForTimeout(150);
   if (path !== "overview") await navigate(role, path);
 }
@@ -103,9 +100,9 @@ try {
       .getByRole("textbox", { name: "Email", exact: true })
       .fill("demo@example.test");
     await page.getByLabel("Contact phone").fill("+263771234567");
-    await page.getByLabel(/^Demo password/).fill("fictional-password");
+    await page.getByLabel(/^Password/).fill("fictional-password");
     assert.equal(
-      await page.getByLabel(/^Demo password/).getAttribute("type"),
+      await page.getByLabel(/^Password/).getAttribute("type"),
       "password",
     );
     await page.getByRole("button", { name: "Continue", exact: true }).click();
@@ -259,9 +256,7 @@ try {
       await page
         .getByLabel("I agree to share relevant farm information")
         .check();
-      await page
-        .getByRole("button", { name: "Submit demo application" })
-        .click();
+      await page.getByRole("button", { name: "Submit application" }).click();
       await page
         .getByText("An active application already exists", { exact: false })
         .waitFor();
@@ -355,8 +350,8 @@ try {
       ["Required documents", "Crop budget and tenure evidence"],
     ])
       await page.getByLabel(label).fill(value);
-    await page
-      .getByRole("button", { name: "Publish demo product", exact: true })
+    await page.getByRole("dialog")
+      .getByRole("button", { name: "Publish product", exact: true })
       .click();
     await page.getByText("Pilot seasonal finance", { exact: true }).waitFor();
     await switchRole("farmer", "financing/1");
@@ -368,7 +363,7 @@ try {
       .getByRole("button", { name: "Start application", exact: true })
       .click();
     await page.getByLabel("I agree to share relevant farm information").check();
-    await page.getByRole("button", { name: "Submit demo application" }).click();
+    await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByRole("heading", { name: "My applications" }).waitFor();
     await page.getByText("Pilot seasonal finance", { exact: true }).waitFor();
     await switchRole("lender", "applications");
@@ -396,7 +391,7 @@ try {
     await page
       .getByLabel("Message", { exact: false })
       .fill("Can we review this demo crop budget?");
-    await page.getByRole("button", { name: "Send demo message" }).click();
+    await page.getByRole("button", { name: "Send message" }).click();
     await switchRole("lender", "messages");
     await page.getByLabel("Conversation").selectOption("business");
     await page
@@ -404,9 +399,7 @@ try {
       .waitFor();
     await page.getByRole("button", { name: "Block contact" }).click();
     assert.equal(
-      await page
-        .getByRole("button", { name: "Send demo message" })
-        .isDisabled(),
+      await page.getByRole("button", { name: "Send message" }).isDisabled(),
       true,
     );
     await page.getByRole("button", { name: "Unblock", exact: true }).click();
@@ -418,8 +411,8 @@ try {
     await page
       .getByLabel("Message", { exact: false })
       .fill("Explain this demo verification status.");
-    await page.getByRole("button", { name: "Send demo message" }).click();
-    await page.getByText(/Automated demo acknowledgement/).waitFor();
+    await page.getByRole("button", { name: "Send message" }).click();
+    await page.getByText(/Automated acknowledgement/).waitFor();
   });
   await check(
     "investor suitability answers reach the session review",
@@ -429,9 +422,7 @@ try {
         .getByRole("textbox", { name: "Email", exact: true })
         .fill("investor@example.test");
       await page.getByLabel("Contact phone").fill("+263771234567");
-      await page
-        .getByLabel(/^Demo password/)
-        .fill("fictional-investor-password");
+      await page.getByLabel(/^Password/).fill("fictional-investor-password");
       await page.getByRole("button", { name: "Continue", exact: true }).click();
       for (let step = 0; step < 5; step++) {
         for (const input of await page.locator("form .field input").all()) {
@@ -468,7 +459,7 @@ try {
       await switchRole("admin", "kyc");
       await page
         .locator("tr")
-        .filter({ hasText: "Investor demo profile" })
+        .filter({ hasText: "Investor profile" })
         .getByRole("button", { name: "Review case" })
         .click();
       await page

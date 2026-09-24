@@ -43,8 +43,6 @@ export const date = (s) =>
         year: "numeric",
       })
     : "Not yet reviewed";
-export const demoNotice =
-  "Fictional demo data. No live lending, investing, payments or external messages.";
 export const investmentNotice =
   "Illustrative opportunities only. Not an offer, solicitation or investment recommendation. Investment products remain subject to applicable approvals and licensed partners.";
 export function initialState() {
@@ -60,8 +58,9 @@ export function initialState() {
     institutions: institutions.map((x, i) => ({
       ...x,
       id: String(i + 1),
-      description: "Fictional institution supporting agricultural businesses.",
-      contact: "Contact through the Farm-Capta demo inbox.",
+      description:
+        "Supporting agricultural businesses with specialist services.",
+      contact: "Contact through the Farm-Capta inbox.",
     })),
     products: products.map((p, i) => ({
       ...p,
@@ -153,17 +152,14 @@ export function initialState() {
         status: "Action Required",
         notes: [
           {
-            text: "Supply a current identity document in this demo.",
+            text: "Supply a current identity document for review.",
             at: "2026-08-20T10:00:00Z",
           },
         ],
       },
     ],
     profiles: Object.fromEntries(
-      roles.map((r) => [
-        r,
-        { name: names[r], email: `${r}.demo@farmcapta.local` },
-      ]),
+      roles.map((r) => [r, { name: names[r], email: `${r}@farmcapta.local` }]),
     ),
     posts: [
       {
@@ -178,7 +174,7 @@ export function initialState() {
       {
         id: "POST-2",
         author: "AgriCredit Zimbabwe",
-        text: "Demo briefing: prepare a crop budget, tenure evidence and buyer information before applying for seasonal finance.",
+        text: "Briefing: prepare a crop budget, tenure evidence and buyer information before applying for seasonal finance.",
         likes: [],
         saved: [],
         comments: [],
@@ -229,7 +225,7 @@ export function initialState() {
     audit: [
       {
         id: "A-1",
-        text: "Fictional demo workspace created",
+        text: "Workspace created",
         actor: "System",
         at: "2026-08-21T10:00:00Z",
       },

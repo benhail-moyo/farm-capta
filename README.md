@@ -27,7 +27,7 @@ The development and preview servers bind to localhost by default. For a delibera
 
 1. Start on the public homepage: Farm-Capta’s value is credible agricultural evidence, not guaranteed financing.
 2. Choose **Get started → Farmer**. Complete the onboarding steps with fictional information and sample files. Review the fields, give consent and submit. The profile becomes **Submitted**, not Verified.
-3. Choose **Switch demo role → Admin**. Open Farm verification, inspect evidence, record a reason and a simulated decision.
+3. Choose **Switch workspace → Admin**. Open Farm verification, inspect evidence, record a reason and a simulated decision.
 4. Switch back to Farmer. See the updated status in Verification and the notification. Browse financing and check eligibility.
 5. Switch to Lender. Filter farms, open a specific farm report, view shared evidence, review applications and advance them through permitted stages. Portfolio totals follow funded demo records.
 6. Use the Business or Lender role to publish an update. Follow, comment, save and report it from another role; review reports as Admin.

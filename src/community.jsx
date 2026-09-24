@@ -76,7 +76,7 @@ export function Feed({ role }) {
                   role,
                 );
                 e.target.reset();
-                notify("Your demo update is published.");
+                notify("Your update is published.");
               }}
             >
               <Field
@@ -96,7 +96,7 @@ export function Feed({ role }) {
                   <span className="avatar">{p.author[0]}</span>
                   <div>
                     <strong>{p.author}</strong>
-                    <small>Fictional agricultural update</small>
+                    <small>Agricultural update</small>
                   </div>
                 </div>
                 <Button
@@ -203,8 +203,8 @@ export function Feed({ role }) {
             market access and lessons from the field.
           </p>
           <p className="muted">
-            Only verified demo institutions and agricultural businesses can
-            publish. Everyone can follow, save, comment and report.
+            Only verified institutions and agricultural businesses can publish.
+            Everyone can follow, save, comment and report.
           </p>
         </aside>
       </div>
@@ -227,7 +227,7 @@ export function Feed({ role }) {
                 role,
               );
               setReport(null);
-              notify("Report sent to the demo moderation queue.");
+              notify("Report sent to the moderation queue.");
             }}
           >
             <Field
@@ -263,7 +263,7 @@ export function News({ education = false, id, go }) {
       <Heading
         eyebrow="Farm-Capta intelligence"
         title={education ? "Agricultural learning centre" : "Agri News"}
-        description="Fictional editorial examples for the prototype. These are not live market reports."
+        description="Agricultural insights and sample briefings."
       />
       {education && (
         <div className="grid cols3">
@@ -353,7 +353,7 @@ export function Institutions({ role, go, manage = false, id }) {
     <>
       <Heading
         title={manage ? "Your institution" : "Institution directory"}
-        description="Meet the fictional organisations in the Farm-Capta ecosystem."
+        description="Explore organisations in the Farm-Capta ecosystem."
       />
       <div className="grid cols2">
         {institutions.map((i) => (
@@ -463,7 +463,7 @@ export function Messages({ role }) {
     <>
       <Heading
         title="Messages"
-        description="A local demo inbox. Messages are not sent to external people or institutions."
+        description="Messages stay within this workspace; external delivery is not connected."
       />
       <div className="card">
         <Field
@@ -507,7 +507,7 @@ export function Messages({ role }) {
           ) : (
             <Empty
               title="Start a conversation"
-              text="Ask about verification or a demo application. Investor messaging is limited to support."
+              text="Ask about verification or an application. Investor messaging is limited to support."
             />
           )}
         </div>
@@ -518,7 +518,7 @@ export function Messages({ role }) {
             if (!text || blocked) return;
             if (state.blocked.includes(`${contact}:${role}`)) {
               notify(
-                "This contact is not accepting messages from this demo account.",
+                "This contact is not accepting messages from this account.",
               );
               return;
             }
@@ -536,19 +536,19 @@ export function Messages({ role }) {
                     id: uid(),
                     from: "support",
                     to: role,
-                    text: "Automated demo acknowledgement: your support request has been recorded locally. No live support agent is connected.",
+                    text: "Automated acknowledgement: your support request has been recorded locally. No live support agent is connected.",
                     at: stamp(),
                   });
                 else
                   s.notifications.unshift({
                     id: uid(),
                     role: contact,
-                    text: "A new demo message is waiting.",
+                    text: "A new message is waiting.",
                     page: "messages",
                     read: false,
                   });
               },
-              "Demo message added",
+              "Message added",
               role,
             );
             e.target.reset();
@@ -563,7 +563,7 @@ export function Messages({ role }) {
             disabled={blocked}
           />
           <Button primary disabled={blocked}>
-            Send demo message
+            Send message
           </Button>
         </form>
       </div>
@@ -603,7 +603,7 @@ export function Notifications({ role, go }) {
     <>
       <Heading
         title="Notifications"
-        description="Updates from your demo activity."
+        description="Your latest updates and activity."
       >
         <Button
           onClick={() =>
@@ -655,7 +655,7 @@ export function Profile({ role }) {
     <>
       <Heading
         title="Your profile"
-        description="Use fictional contact information in this local demo."
+        description="Manage your contact information and preferences."
       />
       <form
         className="card"
@@ -666,7 +666,7 @@ export function Profile({ role }) {
             (s) => {
               s.profiles[role] = { ...s.profiles[role], ...d };
             },
-            "Demo profile updated",
+            "Profile updated",
             role,
           );
           notify("Profile saved.");
@@ -680,7 +680,7 @@ export function Profile({ role }) {
         />
         <Field
           name="email"
-          label="Demo contact email"
+          label="Contact email"
           defaultValue={state.profiles[role].email}
           type="email"
           required
@@ -695,7 +695,7 @@ export function Profile({ role }) {
               })
             }
           />
-          Marketing updates (demo preference)
+          Marketing updates
         </label>
         <Button primary>Save profile</Button>
       </form>

@@ -29,7 +29,7 @@ export default function Dashboard({ role, go }) {
       <Heading
         eyebrow={`Welcome back, ${state.profiles[role].name.split(" ")[0]}`}
         title={title}
-        description="Your working overview of the Farm-Capta demonstration."
+        description="Your farm intelligence, priorities and latest activity."
       >
         <Button
           primary
@@ -84,7 +84,7 @@ export default function Dashboard({ role, go }) {
             />
             <Metric label="Awaiting assessment" value={pending.length} />
             <Metric
-              label="Demo portfolio"
+              label="Portfolio"
               value={money(funded.reduce((n, a) => n + a.amount, 0))}
             />
             <Metric label="Active facilities" value={funded.length} />
@@ -183,7 +183,7 @@ export default function Dashboard({ role, go }) {
                 : [
                     [
                       "Complete your profile",
-                      "Submit a simulated suitability and identity profile.",
+                      "Complete your suitability and identity profile.",
                       "onboarding",
                     ],
                     [

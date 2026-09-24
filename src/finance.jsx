@@ -76,13 +76,13 @@ export function Financing({ role, go, manage = false, institutionId }) {
           purpose: d.purpose,
           status: "Submitted",
           notes: [],
-          history: [{ text: "Demo application submitted", at: stamp() }],
+          history: [{ text: "Application submitted", at: stamp() }],
           updated: stamp(),
         });
         s.notifications.unshift({
           id: uid(),
           role: "lender",
-          text: "New demo financing application received.",
+          text: "New financing application received.",
           page: "applications",
           read: false,
         });
@@ -92,7 +92,7 @@ export function Financing({ role, go, manage = false, institutionId }) {
     );
     setSelected(null);
     setApply(false);
-    notify("Demo application submitted. No funds were transferred.");
+    notify("Application submitted. No funds were transferred.");
     go("applications");
   }
   return (
@@ -100,7 +100,7 @@ export function Financing({ role, go, manage = false, institutionId }) {
       <Heading
         eyebrow="Financing ecosystem"
         title={manage ? "Financing products" : "Find financing"}
-        description="Explore fictional financing products. Eligibility is indicative; applications are simulated."
+        description="Compare financing products, requirements and eligibility."
       >
         {manage && (
           <Button
@@ -192,7 +192,7 @@ export function Financing({ role, go, manage = false, institutionId }) {
       )}
       {selected && (
         <Modal
-          title={apply ? "Start a demo application" : selected.type}
+          title={apply ? "Start an application" : selected.type}
           onClose={() => setSelected(null)}
         >
           <h3>{selected.provider}</h3>
@@ -207,7 +207,7 @@ export function Financing({ role, go, manage = false, institutionId }) {
               ))}
               <p className="notice">
                 {eligible
-                  ? "Your demo profile meets these initial checks. This is not a credit decision."
+                  ? "Your profile meets these initial checks. This is not a credit decision."
                   : "Complete the outstanding profile requirements before applying."}
               </p>
               {!eligible && (
@@ -248,7 +248,7 @@ export function Financing({ role, go, manage = false, institutionId }) {
                   />
                   <label className="check">
                     <input type="checkbox" required />I agree to share relevant
-                    farm information with this demo provider.
+                    farm information with this provider.
                   </label>
                   <p className="muted">
                     The request and provider will appear in your application
@@ -259,14 +259,14 @@ export function Financing({ role, go, manage = false, institutionId }) {
                       {error}
                     </p>
                   )}
-                  <Button primary>Submit demo application</Button>
+                  <Button primary>Submit application</Button>
                 </form>
               )}
             </>
           ) : (
             <p>
               Required documents: {selected.docs}. Farmers can check eligibility
-              from their demo workspace.
+              from their workspace.
             </p>
           )}
         </Modal>
@@ -342,7 +342,7 @@ export function Financing({ role, go, manage = false, institutionId }) {
               </p>
             )}
             <Button primary>
-              {create.id ? "Save product changes" : "Publish demo product"}
+              {create.id ? "Save product changes" : "Publish product"}
             </Button>
           </form>
         </Modal>
@@ -381,7 +381,7 @@ export function Applications({ role, go }) {
       </div>
       <div className="card table-wrap">
         <table>
-          <caption>{rows.length} demo applications</caption>
+          <caption>{rows.length} applications</caption>
           <thead>
             <tr>
               {[
@@ -484,7 +484,7 @@ export function Applications({ role, go }) {
                 );
                 setNext("");
                 setReason("");
-                notify("Demo application status updated.");
+                notify("Application status updated.");
               }}
             >
               <h3>Assessment decision</h3>
@@ -579,10 +579,10 @@ export function Portfolio({ role, go }) {
     <>
       <Heading
         title="Portfolio intelligence"
-        description="Exposure is derived from the funded demo application records."
+        description="Exposure is derived from the funded application records."
       />
       <div className="grid cols3">
-        <Metric label="Total demo financing" value={money(total)} />
+        <Metric label="Total financing" value={money(total)} />
         <Metric label="Facilities" value={rows.length} />
         <Metric label="Farms" value={new Set(rows.map((a) => a.farmId)).size} />
       </div>
@@ -602,7 +602,7 @@ export function Portfolio({ role, go }) {
               />
               {amount / total > 0.4 && (
                 <p className="notice">
-                  Concentration: {crop} exceeds 40% of the demo portfolio.
+                  Concentration: {crop} exceeds 40% of the portfolio.
                 </p>
               )}
             </div>
@@ -630,7 +630,7 @@ export function Portfolio({ role, go }) {
       {!rows.length && (
         <Empty
           title="No funded facilities"
-          text="Facilities appear after a lender advances a demo application to Funded."
+          text="Facilities appear after a lender advances an application to Funded."
         />
       )}
     </>
@@ -730,7 +730,7 @@ export function Opportunities({ page, go, id }) {
       <div className={selected ? "grid" : "grid cols3"}>
         {(selected ? [selected] : farms).map((f) => (
           <article className="card" key={f.id}>
-            <span className="pill warn">Prototype / coming soon</span>
+            <span className="pill warn">Coming soon</span>
             <h2>{f.name}</h2>
             <p className="muted">
               {f.crop} · {f.loc}
@@ -761,8 +761,8 @@ export function Opportunities({ page, go, id }) {
                   toggle("waitlist", f);
                   notify(
                     state.waitlist.includes(f.id)
-                      ? "Demo notification preference removed."
-                      : "Demo notification preference saved. No external email is sent.",
+                      ? "Notification preference removed."
+                      : "Preference saved locally. Email notifications are not connected.",
                   );
                 }}
               >

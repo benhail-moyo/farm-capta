@@ -36,7 +36,7 @@ export function Admin({ page }) {
       <Heading
         eyebrow="Compliance workspace"
         title={title}
-        description="All review actions affect fictional demo records only."
+        description="Review evidence, record decisions and manage your workspace."
       />
       {["kyc", "farm-verification"].includes(page) && (
         <>
@@ -116,7 +116,7 @@ export function Admin({ page }) {
                 >
                   {state.suspended.includes(r)
                     ? "Restore access"
-                    : "Suspend demo access"}
+                    : "Suspend access"}
                 </Button>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function Admin({ page }) {
             <Button
               onClick={() =>
                 download(
-                  "farmcapta-demo-audit.json",
+                  "farmcapta-audit.json",
                   JSON.stringify(state.audit, null, 2),
                   "application/json",
                 )
@@ -220,7 +220,8 @@ export function Admin({ page }) {
             </Button>
           </div>
           <p className="notice">
-            Local prototype history, not a tamper-proof production audit log.
+            Activity is stored in this browser; it is not a tamper-proof audit
+            trail.
           </p>
           <Timeline
             items={state.audit
@@ -248,9 +249,7 @@ export function Admin({ page }) {
             />
             Compact desktop spacing
           </label>
-          <p className="muted">
-            Preferences apply to this browser’s demo workspace.
-          </p>
+          <p className="muted">Preferences apply to this browser.</p>
         </div>
       )}
       {review && (
@@ -277,8 +276,7 @@ export function Admin({ page }) {
               <p className="muted">
                 No session submission is available. Seeded cases use fictional
                 evidence; newly entered identity and suitability answers clear
-                on refresh. Request a fresh demo submission to review those
-                answers.
+                on refresh. Request a fresh submission to review those answers.
               </p>
             )}
           </details>
@@ -310,7 +308,7 @@ export function Admin({ page }) {
                 });
               }, `${review.kind} decision: ${action}`);
               setSelected("");
-              notify("Review recorded and applicant notified in the demo.");
+              notify("Review recorded and a workspace notification added.");
             }}
           >
             <Field

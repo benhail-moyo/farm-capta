@@ -35,7 +35,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { Provider, useStore } from "./store.jsx";
-import { roles, names, demoNotice, investmentNotice, money } from "./model.js";
+import { roles, names, investmentNotice, money } from "./model.js";
 import { Button, Heading, Modal, Field, Empty } from "./ui.jsx";
 import { Onboarding, Verification } from "./onboarding.jsx";
 import {
@@ -414,8 +414,7 @@ function PublicSite({ page, id, enter }) {
                 ))}
               </div>
               <p className="small-text muted">
-                Fictional profiles for demonstration. Each badge describes its
-                current evidence-review status.
+                Each badge describes the farm’s current evidence-review status.
               </p>
             </section>
             <section className="section">
@@ -433,7 +432,7 @@ function PublicSite({ page, id, enter }) {
                     workspace.
                   </p>
                   <Button onClick={() => go("signin")}>
-                    Open the lender demo <ArrowUpRight size={16} />
+                    Open the lender workspace <ArrowUpRight size={16} />
                   </Button>
                 </div>
                 <div className="partner-quote">
@@ -468,7 +467,7 @@ function PublicSite({ page, id, enter }) {
               <>
                 <Heading
                   title="Agricultural profiles"
-                  description="Explore fictional farms and their evidence-review status."
+                  description="Explore farms and their evidence-review status."
                 />
                 <div className="grid cols3">
                   {state.farms.map((f) => (
@@ -518,7 +517,7 @@ function PublicSite({ page, id, enter }) {
                   ))}
                 </div>
                 <Button primary onClick={() => go("signup")}>
-                  Start your demo profile
+                  Start your profile
                 </Button>
               </>
             ) : page === "about" ? (
@@ -543,8 +542,8 @@ function PublicSite({ page, id, enter }) {
                   <h2>A foundation for the future</h2>
                   <p>
                     Future investment infrastructure is a longer-term ambition.
-                    Today’s prototype focuses on verification, farm intelligence
-                    and legitimate financing relationships.
+                    Farm-Capta focuses on verification, farm intelligence and
+                    legitimate financing relationships.
                   </p>
                   <div className="notice">{investmentNotice}</div>
                   <h2>Built for a controlled pilot</h2>
@@ -558,18 +557,14 @@ function PublicSite({ page, id, enter }) {
               </>
             ) : ["privacy", "terms"].includes(page) ? (
               <>
-                <Heading
-                  title={
-                    page === "privacy" ? "Privacy in this demo" : "Demo terms"
-                  }
-                />
+                <Heading title={page === "privacy" ? "Privacy" : "Terms"} />
                 <div className="card">
                   <p>
-                    Use fictional information only. This frontend is a local
-                    demonstration, not a live financial or identity-verification
-                    service. Demo activity is saved in your browser. Sensitive
-                    onboarding drafts and uploaded file contents remain in
-                    memory and clear when the page refreshes.
+                    Use sample information only. Live financial and
+                    identity-verification services are not connected. Activity
+                    is saved in your browser. Sensitive onboarding drafts and
+                    uploaded file contents remain in memory and clear when the
+                    page refreshes.
                   </p>
                   <p>
                     No live investment, loan contract, payment, credit decision
@@ -594,9 +589,8 @@ function PublicSite({ page, id, enter }) {
         <div className="actions">
           <button onClick={() => go("about")}>About</button>
           <button onClick={() => go("privacy")}>Privacy</button>
-          <button onClick={() => go("terms")}>Demo terms</button>
+          <button onClick={() => go("terms")}>Terms</button>
         </div>
-        <small>{demoNotice}</small>
       </footer>
       {menu && (
         <Modal title="Explore Farm-Capta" onClose={() => setMenu(false)}>
@@ -633,21 +627,15 @@ function Auth({ mode, enter }) {
           Understand the potential.
         </h1>
         <p>
-          Step into a connected demonstration of Zimbabwe’s agricultural
-          verification and financing ecosystem.
+          Step into Zimbabwe’s connected agricultural verification and financing
+          ecosystem.
         </p>
         <ShieldCheck size={42} />
-        <p className="small-text">
-          Demo access is a role simulation, not production authentication. Use
-          fictional information.
-        </p>
       </div>
       <div className="card">
         <Heading
           title={
-            mode === "signup"
-              ? "Start your demo journey"
-              : "Welcome to Farm-Capta"
+            mode === "signup" ? "Start your journey" : "Welcome to Farm-Capta"
           }
           description="Choose an experience to explore."
         />
@@ -656,7 +644,7 @@ function Auth({ mode, enter }) {
             e.preventDefault();
             if (state.suspended.includes(role)) {
               setError(
-                "This demo role is suspended. An admin can restore access.",
+                "This account is suspended. An admin can restore access.",
               );
               return;
             }
@@ -670,7 +658,7 @@ function Auth({ mode, enter }) {
           }}
         >
           <Field
-            label="Demo role"
+            label="Workspace"
             options={roles}
             value={role}
             onChange={(e) => {
@@ -681,40 +669,28 @@ function Auth({ mode, enter }) {
           />
           <div className="demo-account">
             <strong>{names[role]}</strong>
-            <p>{role}.demo@farmcapta.local</p>
-            <small>
-              No real password is needed for these fictional accounts.
-            </small>
+            <small>Sample account · no password required</small>
           </div>
-          <label className="check">
-            <input type="checkbox" required />I understand that this is a local
-            demonstration.
-          </label>
           {error && (
             <p className="error" role="alert">
               {error}
             </p>
           )}
           <Button primary className="full">
-            {mode === "signup" ? "Start demo profile" : "Enter demo workspace"}
+            {mode === "signup" ? "Start profile" : "Enter workspace"}
             <ArrowRight size={16} />
           </Button>
         </form>
         <Button className="text-button" onClick={() => setForgot(true)}>
           About sign-in & account recovery
         </Button>
-        <p className="small-text muted">
-          Identity and contact verification are simulated inside onboarding. No
-          email or SMS is sent.
-        </p>
       </div>
       {forgot && (
-        <Modal title="Demo account access" onClose={() => setForgot(false)}>
+        <Modal title="Account access" onClose={() => setForgot(false)}>
           <p>
-            These fictional accounts use a role selector and do not have
-            passwords to recover. Return here to reopen a demo workspace. A
-            production authentication provider can replace this demo access flow
-            when the backend is integrated.
+            Sample accounts open without a password. Changes are saved in this
+            browser. Live account authentication and password recovery are not
+            connected yet.
           </p>
         </Modal>
       )}
@@ -867,15 +843,7 @@ function Shell({ role, page, go, enter, logout, children }) {
         </div>
         {navigation}
         <div className="sidebar-bottom">
-          <div className="demo-label">
-            <span className="live-dot" /> DEMO WORKSPACE
-          </div>
-          <p>
-            Fictional records.
-            <br />
-            Real possibilities.
-          </p>
-          <Button onClick={() => setSwitcher(true)}>Switch demo role</Button>
+          <Button onClick={() => setSwitcher(true)}>Switch workspace</Button>
           <button className="logout" onClick={logout}>
             <LogOut size={16} /> Return to public site
           </button>
@@ -885,7 +853,6 @@ function Shell({ role, page, go, enter, logout, children }) {
         <header className="topbar">
           <GlobalSearch role={role} go={go} />
           <div className="actions">
-            <span className="demo-chip">Prototype</span>
             <button
               className="notification-button"
               onClick={() => go("notifications")}
@@ -911,7 +878,6 @@ function Shell({ role, page, go, enter, logout, children }) {
             </div>
           )}
           {children}
-          <p className="workspace-disclaimer">{demoNotice}</p>
         </main>
       </div>
       <nav className="mobile-tabs" aria-label="Primary mobile navigation">
@@ -944,21 +910,15 @@ function Shell({ role, page, go, enter, logout, children }) {
                 setSwitcher(true);
               }}
             >
-              Switch demo role
+              Switch workspace
             </Button>
             <Button onClick={logout}>Public site</Button>
           </div>
         </Modal>
       )}
       {switcher && (
-        <Modal
-          title="Choose a demo workspace"
-          onClose={() => setSwitcher(false)}
-        >
-          <p>
-            Role switching explores fictional experiences. It is not an
-            authorization system for real data.
-          </p>
+        <Modal title="Choose a workspace" onClose={() => setSwitcher(false)}>
+          <p>Choose the workspace you want to open.</p>
           <div className="role-options">
             {roles.map((r) => (
               <Button
@@ -1033,7 +993,7 @@ function View({ role, page, id, go }) {
   return (
     <Empty
       title="This page isn’t available in your workspace"
-      text="Choose a section from your navigation or switch demo roles."
+      text="Choose a section from your navigation or switch workspaces."
       action="Back to overview"
       onAction={() => go("overview")}
     />
@@ -1048,9 +1008,7 @@ class ErrorBoundary extends Component {
     return this.state.error ? (
       <div className="error-page">
         <h1>Something didn’t load correctly.</h1>
-        <p>
-          Your saved demo activity remains in this browser. Reload to try again.
-        </p>
+        <p>Your saved activity remains in this browser. Reload to try again.</p>
         <Button primary onClick={() => location.reload()}>
           Reload workspace
         </Button>
@@ -1106,8 +1064,8 @@ function App() {
     return (
       <div className="error-page">
         <Heading
-          title="Demo access suspended"
-          description="An admin can restore this demo account."
+          title="Access suspended"
+          description="An admin can restore this account."
         />
         <Button onClick={logout}>Return to sign-in</Button>
       </div>
