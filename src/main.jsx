@@ -1,70 +1,1148 @@
-import React, {useMemo, useState} from 'react';
-import {createRoot} from 'react-dom/client';
-import {AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid} from 'recharts';
-import {Sprout, ShieldCheck, Landmark, UserRound, Search, Bell, Menu, ChevronRight, FileCheck2, MapPin, Tractor, WalletCards, Newspaper, MessageSquare, Settings, Users, Building2, ClipboardCheck, BriefcaseBusiness, ChartNoAxesCombined, Leaf, Upload, AlertTriangle, Lock, CheckCircle2, Clock3, Eye, Filter, BookOpen, Heart, Share2, Flag, LogOut, Home, CircleDollarSign, Gauge, FolderOpen, Radio, Plus, SlidersHorizontal} from 'lucide-react';
-import './styles.css';
-
-const roles = {
-  farmer:{label:'Farmer', email:'farmer.demo@farmlink.local', name:'Tendai Moyo'},
-  lender:{label:'Lender', email:'lender.demo@farmlink.local', name:'Ruvimbo Ncube'},
-  investor:{label:'Investor', email:'investor.demo@farmlink.local', name:'Michael Dube'},
-  admin:{label:'Admin', email:'admin.demo@farmlink.local', name:'Chipo Soko'}
+import React, {
+  Component,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { createRoot } from "react-dom/client";
+import {
+  Sprout,
+  Home,
+  Search,
+  Bell,
+  Menu,
+  ShieldCheck,
+  Tractor,
+  FileText,
+  WalletCards,
+  MessageSquare,
+  Newspaper,
+  Users,
+  Building2,
+  BookOpen,
+  Heart,
+  Eye,
+  Settings,
+  LogOut,
+  ArrowUpRight,
+  ArrowRight,
+  Check,
+  Leaf,
+  ChartNoAxesCombined,
+  Radio,
+  MapPin,
+} from "lucide-react";
+import { Provider, useStore } from "./store.jsx";
+import { roles, names, demoNotice, investmentNotice, money } from "./model.js";
+import { Button, Heading, Modal, Field, Empty } from "./ui.jsx";
+import { Onboarding, Verification } from "./onboarding.jsx";
+import {
+  FarmCard,
+  FarmProfile,
+  Discovery,
+  Documents,
+  Monitoring,
+} from "./farms.jsx";
+import {
+  Financing,
+  Applications,
+  Portfolio,
+  Opportunities,
+} from "./finance.jsx";
+import {
+  Feed,
+  News,
+  Institutions,
+  Messages,
+  Notifications,
+  Profile,
+} from "./community.jsx";
+import { Admin } from "./admin.jsx";
+import "./styles.css";
+const Dashboard = lazy(() => import("./dashboard.jsx"));
+const nav = {
+  farmer: [
+    ["overview", "Overview", Home],
+    ["farm-profile", "My farm", Tractor],
+    ["verification", "Verification", ShieldCheck],
+    ["financing", "Find financing", WalletCards],
+    ["applications", "Applications", FileText],
+    ["monitoring", "Monitoring", ChartNoAxesCombined],
+    ["documents", "Documents", FileText],
+    ["institutions", "Institutions", Building2],
+    ["feed", "Agri Feed", Radio],
+    ["news", "Agri News", Newspaper],
+    ["messages", "Messages", MessageSquare],
+    ["profile", "My profile", Users],
+  ],
+  lender: [
+    ["overview", "Overview", Home],
+    ["discovery", "Farm discovery", Search],
+    ["applications", "Applications", FileText],
+    ["portfolio", "Portfolio", ChartNoAxesCombined],
+    ["monitoring", "Monitoring", Eye],
+    ["reports", "Farm reports", FileText],
+    ["products", "Financing products", WalletCards],
+    ["institution", "Institution profile", Building2],
+    ["feed", "Agri Feed", Radio],
+    ["news", "Agri News", Newspaper],
+    ["messages", "Messages", MessageSquare],
+    ["profile", "My profile", Users],
+  ],
+  investor: [
+    ["overview", "Overview", Home],
+    ["opportunities", "Opportunities", Leaf],
+    ["saved", "Saved", Heart],
+    ["watchlist", "Watchlist", Eye],
+    ["portfolio", "Future portfolio", ChartNoAxesCombined],
+    ["verification", "Verification", ShieldCheck],
+    ["education", "Learning centre", BookOpen],
+    ["feed", "Agri Feed", Radio],
+    ["news", "Agri News", Newspaper],
+    ["messages", "Support", MessageSquare],
+    ["profile", "My profile", Users],
+  ],
+  business: [
+    ["overview", "Overview", Home],
+    ["farm-profile", "Business profile", Tractor],
+    ["verification", "Verification", ShieldCheck],
+    ["documents", "Documents", FileText],
+    ["financing", "Find financing", WalletCards],
+    ["applications", "Applications", FileText],
+    ["monitoring", "Monitoring", ChartNoAxesCombined],
+    ["feed", "Publish & feed", Radio],
+    ["institutions", "Institutions", Building2],
+    ["news", "Agri News", Newspaper],
+    ["messages", "Messages", MessageSquare],
+    ["profile", "My profile", Users],
+  ],
+  admin: [
+    ["overview", "Overview", Home],
+    ["kyc", "Identity reviews", Users],
+    ["farm-verification", "Farm verification", ShieldCheck],
+    ["users", "Users", Users],
+    ["institutions", "Institutions", Building2],
+    ["content", "Content moderation", Radio],
+    ["reports", "Reports & flags", FileText],
+    ["audit", "Audit activity", Eye],
+    ["settings", "Settings", Settings],
+    ["profile", "My profile", Users],
+  ],
 };
-const provinces=['Mashonaland Central','Mashonaland East','Mashonaland West','Midlands','Manicaland','Matabeleland North','Masvingo'];
-const farms=[
- {id:1,name:'Nyika Plains Farm',farmer:'Tendai Moyo',loc:'Mazowe, Mashonaland Central',province:'Mashonaland Central',district:'Mazowe',crop:'Maize',size:120,need:85000,ready:'Strong',status:'Field Verification',date:'18 Aug 2026',tenure:'A2 offer letter',irrigation:'Borehole + pivot',offtaker:'Confirmed',score:82,history:[3.1,4.2,4.8],docs:5},
- {id:2,name:'Mupfure Agri Estate',farmer:'Grace Chirwa',loc:'Chegutu, Mashonaland West',province:'Mashonaland West',district:'Chegutu',crop:'Soybeans',size:210,need:140000,ready:'Strong',status:'Verified',date:'02 Aug 2026',tenure:'Lease',irrigation:'Dam access',offtaker:'Contracted',score:88,history:[2.2,2.8,3.3],docs:7},
- {id:3,name:'Green Valley Produce',farmer:'Farai Nyathi',loc:'Mutare, Manicaland',province:'Manicaland',district:'Mutare',crop:'Horticulture',size:38,need:42000,ready:'Moderate',status:'Document Review',date:'11 Aug 2026',tenure:'Communal/customary',irrigation:'Drip lines',offtaker:'Buyer letters',score:68,history:[1.4,1.6,1.9],docs:4},
- {id:4,name:'Umfuli Grain & Livestock',farmer:'Blessing Sibanda',loc:'Kwekwe, Midlands',province:'Midlands',district:'Kwekwe',crop:'Wheat',size:175,need:120000,ready:'Moderate',status:'Submitted',date:'06 Aug 2026',tenure:'Lease',irrigation:'Seasonal river',offtaker:'Pending',score:61,history:[2.7,3.0,2.9],docs:3},
- {id:5,name:'Mazowe Horticulture Estate',farmer:'Rudo Matema',loc:'Bindura, Mashonaland Central',province:'Mashonaland Central',district:'Bindura',crop:'Horticulture',size:62,need:65000,ready:'Strong',status:'Verified',date:'15 Aug 2026',tenure:'Title deed',irrigation:'Borehole + reservoir',offtaker:'Supermarket LOI',score:90,history:[1.9,2.4,2.8],docs:8}
-];
-const institutions=[
- {name:'AgriCredit Zimbabwe',type:'Agricultural lender',focus:'Input finance, working capital',regions:'National',verified:true},
- {name:'Zambezi Microfinance',type:'Microfinance',focus:'Smallholder production loans',regions:'Mashonaland, Midlands',verified:true},
- {name:'Harvest Mutual Insurance',type:'Insurance',focus:'Weather-index and crop insurance',regions:'Pilot districts',verified:false}
-];
-const products=[
- {provider:'AgriCredit Zimbabwe',type:'Input finance',range:'US$5k–US$150k',duration:'6–12 months',eligibility:'Verified farm profile, production plan, buyer evidence',docs:'ID, land document, crop budget'},
- {provider:'Zambezi Microfinance',type:'Irrigation finance',range:'US$2k–US$35k',duration:'12–24 months',eligibility:'Water source and field verification',docs:'Quotations, photos, consent'},
- {provider:'Harvest Mutual Insurance',type:'Crop insurance',range:'Seasonal cover',duration:'One production cycle',eligibility:'Verified GPS boundary and crop declaration',docs:'Farm map, crop schedule'}
-];
-const opportunities=[
- {id:1,farm:'Mupfure Agri Estate',crop:'Soybeans',region:'Mashonaland West',target:'US$140,000',season:'2026/27',duration:'9 months',risk:'Moderate',verified:'Operational Profile Verified',perf:'3-year yield records available'},
- {id:2,farm:'Mazowe Horticulture Estate',crop:'Horticulture',region:'Mashonaland Central',target:'US$65,000',season:'Winter 2027',duration:'7 months',risk:'Moderate-Low',verified:'Documents Reviewed',perf:'Buyer letters and greenhouse records'},
- {id:3,farm:'Nyika Plains Farm',crop:'Maize',region:'Mashonaland Central',target:'US$85,000',season:'2026/27',duration:'10 months',risk:'Moderate',verified:'Field Verification',perf:'Production history submitted'}
-];
-const news=[
- {cat:'Markets',title:'Sample: Grain market dashboard shows rising demand for verified supplier data',source:'FarmLink Sample Intelligence',date:'21 Aug 2026'},
- {cat:'Weather',title:'Sample: Irrigation planning remains central for winter wheat financing decisions',source:'FarmLink Sample Intelligence',date:'20 Aug 2026'},
- {cat:'Finance',title:'Sample: Lenders increase focus on production evidence and offtaker records',source:'FarmLink Sample Intelligence',date:'18 Aug 2026'}
-];
-const appVolume=[{m:'Mar',v:24},{m:'Apr',v:31},{m:'May',v:44},{m:'Jun',v:39},{m:'Jul',v:56},{m:'Aug',v:68}];
-const cropData=[{name:'Maize',value:42},{name:'Soybeans',value:22},{name:'Horticulture',value:18},{name:'Wheat',value:13},{name:'Other',value:5}];
-const palette=['#0d3b2e','#2f7d55','#e0ac3b','#2b6cb0','#9a6b4f'];
-function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n)}
-function StatusBadge({status}){let c=status?.includes('Verified')?'':'neutral'; if(['Action Required','Portfolio at Risk'].includes(status)) c='warn'; if(status==='Rejected'||status==='Declined') c='red'; if(status?.includes('Review')||status==='Submitted'||status==='Screening') c='info'; return <span className={'pill '+c}>{status==='Verified'||status?.includes('Verified')?<CheckCircle2 size={14}/>:status?.includes('Review')?<Clock3 size={14}/>:<ShieldCheck size={14}/>} {status}</span>}
-function Metric({label,value,trend,icon:Icon=ChartNoAxesCombined}){return <div className="metric"><div className="split"><div className="label">{label}</div><Icon size={19} color="#2f7d55"/></div><div className="value">{value}</div>{trend&&<div className="trend">{trend}</div>}</div>}
-function ChartCard({title,children,sub}){return <div className="card"><div className="split"><div><h3>{title}</h3>{sub&&<div className="muted" style={{fontSize:13}}>{sub}</div>}</div></div><div style={{height:240,marginTop:14}}>{children}</div></div>}
-function FarmCard({farm,onOpen}){return <div className="card"><div className="split"><div><h3>{farm.name}</h3><div className="muted"><MapPin size={14}/> {farm.loc}</div></div><StatusBadge status={farm.status}/></div><div className="grid cols3" style={{marginTop:16}}><div><b>{farm.crop}</b><div className="muted">Primary crop</div></div><div><b>{farm.size} ha</b><div className="muted">Farm size</div></div><div><b>{money(farm.need)}</b><div className="muted">Financing need</div></div></div><div className="risk"><span className="muted">Readiness</span><div className="bar"><span style={{width:farm.score+'%'}}/></div></div><div className="split"><span className="pill">{farm.ready}</span><button className="btn small primary" onClick={()=>onOpen(farm.id)}>View Farm Report <ChevronRight size={15}/></button></div></div>}
-function Landing({enter}){return <div><header className="public-top"><div className="nav-wrap"><div className="brand"><div className="brand-mark"><Sprout size={21}/></div>FarmLink Zimbabwe</div><nav className="public-links"><a href="#how">How it works</a><a href="#farms">Farms</a><a href="#finance">Financing</a><a href="#news">Agri News</a><a href="#about">About</a></nav><div className="actions"><button className="btn ghost" onClick={()=>enter('lender')}>Sign In</button><button className="btn primary" onClick={()=>enter('farmer','onboarding')}>Get Started</button></div></div></header><main><section className="hero"><div><div className="eyebrow">Verified information → Better decisions → More productive capital</div><h1>Making Zimbabwean agriculture more bankable.</h1><p className="lead">FarmLink verifies agricultural operations, organizes farm intelligence and connects credible agricultural businesses with financing ecosystems.</p><div className="actions" style={{marginTop:26,flexWrap:'wrap'}}><button className="btn primary" onClick={()=>enter('farmer','onboarding')}>Get Your Farm Verified</button><button className="btn" onClick={()=>enter('investor')}><span className="pill warn">Prototype / Coming Soon</span> Explore Farm Opportunities</button></div></div><div className="hero-visual"><div className="map-card"><div><span className="pill">Trust layer active</span><h2 style={{color:'white',marginTop:14}}>Farm intelligence map</h2><p style={{color:'#dbe9df'}}>Fictional demonstration data across Mashonaland, Midlands, Manicaland and Masvingo.</p></div><div className="floating"><div className="split"><b>Nyika Plains Farm</b><StatusBadge status="Field Verification"/></div><div className="grid cols3" style={{marginTop:12}}><span>120 ha</span><span>Maize</span><span>82%</span></div></div></div></div></section><section className="section grid cols3" id="how"><div className="card"><ShieldCheck/><h3>1. Verify</h3><p className="muted">Identity, land documentation, GPS evidence, production history and operating profile are reviewed through standardized workflows.</p></div><div className="card"><Landmark/><h3>2. Assess</h3><p className="muted">Lenders receive farm reports, readiness factors and portfolio intelligence to support—not replace—credit decisions.</p></div><div className="card"><Tractor/><h3>3. Monitor</h3><p className="muted">Season milestones, buyer relationships, documentation updates and alerts create ongoing visibility after financing.</p></div></section><section className="section"><div className="split"><div><h2>Built for the agricultural financing ecosystem</h2><p className="muted">Role-specific experiences keep FarmLink focused on verified agricultural information.</p></div></div><div className="grid cols4" style={{marginTop:18}}>{[['Farmers','Build a verified profile and discover financing.'],['Lenders','Find and assess farms with better evidence.'],['Agri businesses','Create a professional public agricultural profile.'],['Future investors','Explore illustrative opportunities, subject to regulatory readiness.']].map(x=><div className="card soft" key={x[0]}><h3>{x[0]}</h3><p className="muted">{x[1]}</p></div>)}</div></section><section className="section" id="farms"><div className="split"><h2>Featured verified farm profiles</h2><button className="btn" onClick={()=>enter('lender','discovery')}>Open Discovery</button></div><div className="grid cols3" style={{marginTop:18}}>{farms.slice(0,3).map(f=><FarmCard key={f.id} farm={f} onOpen={()=>enter('lender','farm-report')}/>)}</div></section><section className="section grid cols2" id="finance"><div className="card"><h2>Future investment infrastructure</h2><div className="notice"><b>Prototype notice:</b> Investment examples are illustrative only and are not offers, securities, financial advice or solicitations. Actual products will only be available following regulatory approvals and/or through appropriately licensed partners.</div><button className="btn primary" style={{marginTop:16}} onClick={()=>enter('investor')}>View prototype dashboard</button></div><div className="card"><h2>Agricultural intelligence</h2>{news.map(n=><div className="feed-post" key={n.title}><span className="pill info">{n.cat}</span><h3 style={{marginTop:8}}>{n.title}</h3><p className="muted">{n.source} • {n.date}</p></div>)}</div></section></main><footer className="footer">FarmLink Zimbabwe prototype. No live financial products, offers, payments, or regulatory licence claims are made in this demo.</footer></div>}
-function Shell({role,setRole,page,setPage,children}){const nav={farmer:[['overview',Home],['onboarding',ClipboardCheck],['farm-profile',Tractor],['financing',WalletCards],['monitoring',Gauge],['documents',FolderOpen],['feed',Radio],['messages',MessageSquare],['profile',UserRound]],lender:[['overview',Home],['discovery',Search],['applications',ClipboardCheck],['portfolio',ChartNoAxesCombined],['monitoring',Gauge],['reports',FileCheck2],['products',WalletCards],['feed',Radio],['messages',MessageSquare],['institution',Building2]],investor:[['overview',Home],['opportunities',BriefcaseBusiness],['saved',Heart],['watchlist',Eye],['portfolio',ChartNoAxesCombined],['education',BookOpen],['feed',Radio],['profile',UserRound]],admin:[['overview',Home],['kyc',Users],['farm-verification',ShieldCheck],['users',UserRound],['institutions',Building2],['content',Radio],['reports',Flag],['audit',FileCheck2],['settings',Settings]]}[role];return <div className="shell"><aside className="sidebar"><div className="side-brand"><div className="brand-mark"><Sprout size={20}/></div>FarmLink</div><div className="side-section">Demo role</div><div className="role-switch">{Object.entries(roles).map(([k,r])=><button key={k} className={'btn small '+(role===k?'primary':'')} onClick={()=>{setRole(k);setPage('overview')}}>{r.label}</button>)}</div><div className="side-section">Navigation</div>{nav.map(([p,Icon])=><button key={p} className={'side-link '+(page===p?'active':'')} onClick={()=>setPage(p)}><Icon size={18}/>{p.split('-').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ')}</button>)}<div className="side-section">Compliance</div><div className="notice" style={{background:'rgba(255,249,232,.09)',color:'#f4dfaa',borderColor:'rgba(244,223,170,.3)',fontSize:12}}>Prototype only. No live lending, investing or money movement.</div><button className="side-link" onClick={()=>setRole(null)}><LogOut size={18}/> Public site</button></aside><main className="main"><div className="topbar"><div className="search"><Search size={18}/> Search farms, institutions, products, news...</div><div className="actions"><div className="role-switch hide-mobile">{Object.entries(roles).map(([k,r])=><button key={k} className={'btn small '+(role===k?'primary':'')} onClick={()=>{setRole(k);setPage('overview')}}>{r.label}</button>)}</div><button className="btn small"><Bell size={16}/> 7</button><div className="avatar">{roles[role].name[0]}</div></div></div><div className="content">{children}</div><div className="mobile-tabs">{nav.slice(0,5).map(([p,Icon])=><button key={p} className={page===p?'active':''} onClick={()=>setPage(p)}><Icon size={19}/>{p.split('-')[0]}</button>)}<button onClick={()=>setPage('profile')}><Menu size={19}/>More</button></div></main></div>}
-function FarmerOverview({setPage}){return <div className="grid"><div className="split"><div><h2>Good morning, Tendai</h2><p className="muted">Nyika Plains Farm verification is moving through field review.</p></div><button className="btn primary" onClick={()=>setPage('onboarding')}>Complete Verification</button></div><div className="grid cols4"><Metric label="Verification status" value="82%" trend="Field visit scheduled" icon={ShieldCheck}/><Metric label="Profile completeness" value="91%" trend="+9% this week" icon={UserRound}/><Metric label="Financing opportunities" value="6" trend="2 matched lenders" icon={WalletCards}/><Metric label="Active applications" value="2" trend="1 in screening" icon={ClipboardCheck}/></div><div className="grid cols2"><div className="card"><div className="profile-cover"></div><div className="split" style={{marginTop:16}}><div><h3>Nyika Plains Farm</h3><p className="muted">Mazowe, Mashonaland Central • 120 ha • Maize / Soybeans</p></div><StatusBadge status="Farm Location Verified"/></div><div className="grid cols3" style={{marginTop:16}}><div><b>A2 documentation</b><div className="muted">Tenure evidence</div></div><div><b>Borehole + pivot</b><div className="muted">Irrigation</div></div><div><b>2 buyer letters</b><div className="muted">Market evidence</div></div></div></div><div className="card"><h3>Financing Readiness: Strong</h3><p className="muted">This is not a credit score. It summarizes verification factors that may support lender assessment.</p>{['Identity verified','Farm location verified','Documentation mostly complete','Production history available','Buyer/offtaker information available'].map((x,i)=><div className="tl" key={x} style={{marginLeft:22}}><b>{x}</b><div className="muted">Reviewed factor {i+1}</div></div>)}<button className="btn" onClick={()=>setPage('documents')}>Upload missing lease schedule</button></div></div><div className="grid cols2"><ChartCard title="Production trend" sub="Sample maize tonnes per hectare"><ResponsiveContainer><LineChart data={[{y:'2023',v:3.1},{y:'2024',v:4.2},{y:'2025',v:4.8},{y:'2026 est.',v:5.1}]}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="y"/><YAxis/><Tooltip/><Line type="monotone" dataKey="v" stroke="#2f7d55" strokeWidth={3}/></LineChart></ResponsiveContainer></ChartCard><div className="card"><h3>Applications</h3><table className="table"><tbody>{[['AgriCredit Zimbabwe','Input finance','US$85,000','Screening'],['Zambezi Microfinance','Irrigation finance','US$22,000','Submitted']].map(r=><tr key={r[0]}>{r.map((c,i)=><td key={c}>{i===3?<StatusBadge status={c}/>:c}</td>)}</tr>)}</tbody></table><h3 style={{marginTop:18}}>Recommended actions</h3>{['Add current season crop budget','Complete buyer contact details','Schedule field verification'].map(x=><div className="doc" key={x}><span>{x}</span><ChevronRight size={16}/></div>)}</div></div></div>}
-function Onboarding({type='farmer'}){const steps= type==='farmer'?['Account','Identity','Farm','Land/Tenure','Production','Market','Financing','Consent','Review','Verification']:['Account','Identity','Residence','Employment','Source of funds','Experience','Risk tolerance','Objectives','PEP','Terms','Privacy','Verification']; const [s,setS]=useState(0);return <div className="grid"><div><h2>{type==='farmer'?'Farmer verification onboarding':'Investor KYC prototype onboarding'}</h2><p className="muted">Realistic demo workflow with validation placeholders, consent separation and simulated compliance statuses.</p></div><div className="card"><div className="stepper">{steps.map((_,i)=><div key={i} className={'step '+(i<=s?'done':'')}/>)}</div><div className="split" style={{marginTop:16}}><div><span className="pill info">Step {s+1} of {steps.length}</span><h2 style={{marginTop:10}}>{steps[s]}</h2></div><StatusBadge status={s===steps.length-1?'Submitted':'In Progress'}/></div>{s===steps.length-1?<div className="notice"><b>Profile submitted for verification.</b><br/>This prototype does not provide instant approval. Compliance screening, document review and verification decisions are simulated.</div>:<StepFields step={steps[s]} type={type}/>}<div className="split" style={{marginTop:18}}><button className="btn" disabled={s===0} onClick={()=>setS(Math.max(0,s-1))}>Back</button><button className="btn primary" onClick={()=>setS(Math.min(steps.length-1,s+1))}>{s===steps.length-2?'Submit for verification':'Continue'}</button></div></div></div>}
-function StepFields({step,type}){if(step==='Consent'||step==='Terms'||step==='Privacy')return <div className="grid"><label className="doc"><span>Identity verification consent</span><input type="checkbox"/></label><label className="doc"><span>{type==='farmer'?'Farm verification consent':'Sanctions/compliance screening acknowledgement'}</span><input type="checkbox"/></label><label className="doc"><span>Data processing consent</span><input type="checkbox"/></label><label className="doc"><span>Sharing with approved financing partners</span><input type="checkbox"/></label><label className="doc"><span>Marketing communications (optional)</span><input type="checkbox"/></label></div>; const common={Account:['Email or phone','Password','Account type'],Identity:['Full legal name','Date of birth','Nationality','ID type','ID number','Residential address'],Farm:['Farm name','Province','District','GPS coordinates','Farm size (ha)','Agricultural activity'],'Land/Tenure':['Tenure/document type','Document reference','Upload supporting document','Notes about rights/arrangement'],Production:['Crops','Livestock','Historical yields','Current season','Irrigation','Equipment','Labour','Storage'],Market:['Current buyers','Offtakers','Contract farming','Estimated annual production','Market access'],Financing:['Existing financing','Amount required','Purpose','Desired period','Preferred partners'],Review:['Review submitted information','Declare information accuracy']}; const inv={Residence:['Street address','City','Province','Country','Proof of residence upload'],Employment:['Employment status','Employer/business name','Industry','Monthly income band'], 'Source of funds':['Source of funds','Business/income source','Expected activity','Bank reference placeholder'],Experience:['Investment experience','Products understood','Past agricultural exposure'], 'Risk tolerance':['Loss tolerance','Liquidity needs','Time horizon'], Objectives:['Income','Capital growth','Agricultural impact','Diversification'], PEP:['Politically exposed person declaration','Related party declaration','Sanctions screening status placeholder']}; const fields=(common[step]||inv[step]||['Notes']);return <div className="form-grid">{fields.map((f,i)=><div className="field" key={f}><label>{f}</label>{f.toLowerCase().includes('upload')?<div className="doc"><span className="muted">PDF/JPG/PNG up to 10MB</span><Upload size={18}/></div>:f.toLowerCase().includes('notes')?<textarea placeholder={`Enter ${f.toLowerCase()}`}/>:<input placeholder={`Enter ${f.toLowerCase()}`}/>}<div className="muted" style={{fontSize:12,marginTop:5}}>Required for prototype validation</div></div>)}</div>}
-function FarmProfile(){return <div className="grid"><div className="profile-cover"></div><div className="split"><div><h2>Nyika Plains Farm</h2><p className="muted">Mazowe, Mashonaland Central • 120 hectares • Maize, soybeans and rotational legumes</p></div><div className="actions"><StatusBadge status="Farm Location Verified"/><StatusBadge status="Documents Reviewed"/></div></div><div className="tabs">{['Overview','Verification','Land & Tenure','Production','Infrastructure','Equipment','Financial readiness','Market/offtakers','Documents','Monitoring'].map((t,i)=><button key={t} className={'tab '+(i===0?'active':'')}>{t}</button>)}</div><div className="grid cols3"><div className="card"><h3>Land & tenure</h3><p>A2 offer letter documentation submitted. FarmLink records document type and review status; it does not convert tenure documents into title ownership.</p><StatusBadge status="Document Review"/></div><div className="card"><h3>Production</h3><p>Three seasons of maize yield records submitted with buyer delivery notes and input invoices.</p><StatusBadge status="Operational Profile Verified"/></div><div className="card"><h3>Monitoring</h3><p>Planting target: November 2026. Expected harvest: April 2027. Weather data placeholder configured.</p><StatusBadge status="Under Review"/></div></div><div className="card"><h3>Documents</h3>{['National ID copy','A2 offer letter','GPS boundary photos','Buyer letter - GrainCo sample','2025 yield records'].map((d,i)=><div className="doc" key={d}><span><FileCheck2 size={16}/> {d}</span><StatusBadge status={i<3?'Documents Reviewed':'Submitted'}/></div>)}</div></div>}
-function LenderOverview({setPage}){return <div className="grid"><div className="split"><div><h2>Agricultural Finance Intelligence</h2><p className="muted">Evidence-based farm discovery, pipeline assessment and portfolio monitoring.</p></div><button className="btn primary" onClick={()=>setPage('discovery')}>Discover Verified Farms</button></div><div className="grid cols6"></div><div className="grid cols4"><Metric label="Verified Farms" value="428" trend="+38 this month" icon={ShieldCheck}/><Metric label="Financing Applications" value="76" trend="18 awaiting review" icon={ClipboardCheck}/><Metric label="Active Portfolio" value="US$2.4M" trend="93 active facilities" icon={CircleDollarSign}/><Metric label="Portfolio at Risk" value="7.8%" trend="-1.2% vs July" icon={AlertTriangle}/></div><div className="grid cols2"><ChartCard title="Applications over time"><ResponsiveContainer><AreaChart data={appVolume}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="m"/><YAxis/><Tooltip/><Area dataKey="v" stroke="#0d3b2e" fill="#cfe8d7"/></AreaChart></ResponsiveContainer></ChartCard><ChartCard title="Financing by crop"><ResponsiveContainer><PieChart><Pie data={cropData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} label>{cropData.map((e,i)=><Cell key={e.name} fill={palette[i]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer></ChartCard></div><div className="grid cols2"><div className="card"><h3>Priority actions</h3>{['12 applications awaiting screening','4 document exceptions require follow-up','Maize concentration warning: 42% exposure','2 field verification reports uploaded today'].map((x,i)=><div className="doc" key={x}><span>{x}</span><span className={'pill '+(i===2?'warn':'info')}>{i===2?'Portfolio':'Action'}</span></div>)}</div><div className="card"><h3>Recommended farms</h3>{farms.slice(0,3).map(f=><div className="doc" key={f.name}><span><b>{f.name}</b><br/><span className="muted">{f.crop} • {money(f.need)} • {f.ready}</span></span><button className="btn small" onClick={()=>setPage('farm-report')}>Report</button></div>)}</div></div></div>}
-function Discovery({setPage}){const [q,setQ]=useState('');const filtered=farms.filter(f=>(f.name+f.crop+f.province).toLowerCase().includes(q.toLowerCase()));return <div className="grid"><div className="split"><div><h2>Farm Discovery</h2><p className="muted">Search and filter verified agricultural profiles for underwriting review.</p></div><button className="btn"><SlidersHorizontal size={16}/> Advanced filters</button></div><div className="card"><div className="form-grid"><div className="field"><label>Search</label><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Farm, crop, province..."/></div><div className="field"><label>Province</label><select><option>All provinces</option>{provinces.map(p=><option key={p}>{p}</option>)}</select></div><div className="field"><label>Crop</label><select><option>All crops</option>{['Maize','Soybeans','Wheat','Horticulture','Tobacco','Cotton'].map(p=><option key={p}>{p}</option>)}</select></div><div className="field"><label>Readiness category</label><select><option>Any</option><option>Strong</option><option>Moderate</option><option>Action Required</option></select></div></div></div><div className="grid cols2">{filtered.map(f=><FarmCard farm={f} key={f.id} onOpen={()=>setPage('farm-report')}/>)}</div>{filtered.length===0&&<div className="card"><h3>No farms match your filters.</h3><p className="muted">Try reducing filters or checking another province.</p></div>}</div>}
-function FarmReport(){const f=farms[0]; return <div className="grid"><div className="split"><div><span className="pill info">Due-diligence report</span><h2>{f.name}</h2><p className="muted">This information supports assessment and does not constitute a credit decision.</p></div><button className="btn primary">Export report</button></div><div className="grid cols4"><Metric label="Readiness" value={f.ready} trend="Transparent factors"/><Metric label="Requested" value={money(f.need)}/><Metric label="Documents" value={f.docs}/><Metric label="Last verified" value={f.date}/></div><div className="grid cols2"><div className="card"><h3>Identity</h3><div className="doc"><span>Farmer identity verification</span><StatusBadge status="Identity Verified"/></div><div className="doc"><span>Residential and contact details</span><StatusBadge status="Documents Reviewed"/></div><h3 style={{marginTop:18}}>Land</h3><p>{f.loc}; {f.size} hectares. Tenure/documentation: {f.tenure}. Document status: reviewed for evidence only.</p></div><div className="card"><h3>Risk / readiness summary</h3>{[['Documentation completeness',88],['Production evidence',72],['Market evidence',84],['Verification confidence',80]].map(([a,b])=><div className="risk" key={a}><span>{a}</span><div className="bar"><span style={{width:b+'%'}}/></div></div>)}<div className="notice">No guarantee of repayment, profitability, yield or government endorsement is implied by verification.</div></div></div><div className="grid cols3"><div className="card"><h3>Operations</h3><p>Crops: {f.crop}, soybeans. Equipment includes tractor, planter, boom sprayer. Labour plan submitted. Storage access documented.</p></div><div className="card"><h3>Market</h3><p>Offtaker status: {f.offtaker}. Historical buyers and delivery notes submitted for review.</p></div><div className="card"><h3>Financial information</h3><p>Requested financing: {money(f.need)} for seed, fertilizer, chemicals and seasonal working capital. Existing obligations declared.</p></div></div><div className="card"><h3>Verification evidence</h3><div className="grid cols4">{['GPS boundary photo','Land document','Field agent notes','Input invoices'].map(x=><div className="doc" key={x}><span>{x}</span><Eye size={16}/></div>)}</div></div></div>}
-function Applications(){const cols=['New','Screening','Due Diligence','Approved'];return <div className="grid"><h2>Applications Pipeline</h2><div className="kanban">{cols.map((c,i)=><div className="column" key={c}><h4>{c}</h4>{farms.slice(i,i+2).map(f=><div className="mini-card" key={f.name}><b>{f.farmer}</b><div className="muted">{f.name}</div><div>{money(f.need)} • {f.crop}</div><div className="actions" style={{marginTop:10}}><button className="btn small">Assessment</button><button className="btn small">Move</button></div></div>)}</div>)}</div></div>}
-function Portfolio(){return <div className="grid"><h2>Portfolio Dashboard</h2><div className="grid cols4"><Metric label="Total financed" value="US$2.4M"/><Metric label="Number of farms" value="93"/><Metric label="Repayment performance" value="94.2%"/><Metric label="Risk distribution" value="Low-Med"/></div><div className="notice"><AlertTriangle size={17}/> 42% of current agricultural exposure is concentrated in maize. Consider crop diversification in new approvals.</div><div className="grid cols2"><ChartCard title="Portfolio performance"><ResponsiveContainer><BarChart data={[{m:'Apr',v:91},{m:'May',v:93},{m:'Jun',v:92},{m:'Jul',v:95},{m:'Aug',v:94}]}><XAxis dataKey="m"/><YAxis/><Tooltip/><Bar dataKey="v" fill="#2f7d55"/></BarChart></ResponsiveContainer></ChartCard><ChartCard title="Geographic exposure"><ResponsiveContainer><BarChart data={provinces.slice(0,5).map((p,i)=>({p:p.replace('Mashonaland ','M. '),v:[28,18,16,14,11][i]}))}><XAxis dataKey="p"/><YAxis/><Tooltip/><Bar dataKey="v" fill="#0d3b2e"/></BarChart></ResponsiveContainer></ChartCard></div></div>}
-function InvestorOverview({setPage}){return <div className="grid"><div className="notice"><b>Investment Marketplace — Prototype.</b> Illustrative only. Not an offer, solicitation, financial product or investment recommendation. Actual investment products will only be made available after applicable approvals and/or through licensed financial partners.</div><div className="split"><h2>Future agricultural opportunity dashboard</h2><button className="btn primary" onClick={()=>setPage('opportunities')}>Explore opportunities</button></div><div className="grid cols4"><Metric label="Saved opportunities" value="3"/><Metric label="Watchlist" value="8 farms"/><Metric label="Illustrative exposure" value="US$0" trend="No live investing"/><Metric label="Upcoming harvest cycles" value="5"/></div><div className="grid cols3">{opportunities.map(o=><OpportunityCard key={o.id} o={o} onOpen={()=>setPage('opportunities')}/>)}</div></div>}
-function OpportunityCard({o,onOpen}){return <div className="card"><span className="pill warn">Prototype / Coming Soon</span><h3 style={{marginTop:12}}>{o.farm}</h3><p className="muted">{o.crop} • {o.region}</p><div className="grid cols2"><div><b>{o.target}</b><div className="muted">Target amount</div></div><div><b>{o.duration}</b><div className="muted">Duration</div></div></div><p><b>Risk:</b> {o.risk}<br/><b>Verification:</b> {o.verified}</p><button className="btn primary" onClick={onOpen}>View Details</button> <button className="btn">Notify Me When Available</button></div>}
-function Opportunities(){return <div className="grid"><div><h2>Illustrative Agricultural Opportunities</h2><p className="muted">These are sample opportunity pages for product demonstration; transaction functionality is disabled.</p></div><div className="grid cols3">{opportunities.map(o=><OpportunityCard key={o.id} o={o} onOpen={()=>{}} />)}</div><div className="card"><h2>Mupfure Agri Estate — Opportunity Detail</h2><div className="notice">Illustrative opportunity for prototype demonstration only. Not an offer, solicitation, financial product or investment recommendation.</div><div className="grid cols3" style={{marginTop:16}}>{['Farm overview','Use of funds','Production plan','Historical performance','Market/offtaker','Verification','Risks','Insurance','Monitoring plan','Expected timeline'].map(x=><div className="mini-card" key={x}><h3>{x}</h3><p className="muted">Sample due-diligence content showing how verified farm data may be presented once legally available.</p></div>)}</div></div></div>}
-function Feed(){return <div className="grid cols3"><div className="card" style={{gridColumn:'span 2'}}><h2>Agri Feed</h2>{['Mazowe Horticulture Estate posted greenhouse transplanting progress with timestamped field photos.','AgriCredit Zimbabwe published eligibility notes for 2026/27 input finance.','FarmLink agronomy sample briefing: soil testing before fertilizer procurement.'].map((p,i)=><div className="feed-post" key={p}><div className="split"><div className="actions"><div className="avatar">{['M','A','F'][i]}</div><div><b>{['Mazowe Horticulture Estate','AgriCredit Zimbabwe','FarmLink Intelligence'][i]}</b><div className="muted">Professional agricultural update • sample content</div></div></div><button className="btn small">Follow</button></div><p>{p}</p><div className="actions muted"><Heart size={16}/> Like <MessageSquare size={16}/> Comment <Share2 size={16}/> Share <Flag size={16}/> Report</div></div>)}</div><div className="card"><h3>Institutional posts</h3><p className="muted">Only verified institutions can publish financing products. Messaging restricts unsolicited financial solicitation.</p><button className="btn primary"><Plus size={16}/> Publish update</button></div></div>}
-function Financing(){return <div className="grid"><h2>Financing Marketplace</h2><p className="muted">Non-transactional discovery of financing products. Applications are simulated and do not transfer funds.</p><div className="grid cols3">{products.map(p=><div className="card" key={p.provider+p.type}><span className="pill">{p.type}</span><h3 style={{marginTop:12}}>{p.provider}</h3><p><b>Amount:</b> {p.range}<br/><b>Duration:</b> {p.duration}</p><p className="muted"><b>Eligibility:</b> {p.eligibility}<br/><b>Required documents:</b> {p.docs}</p><button className="btn primary">Check Eligibility</button></div>)}</div></div>}
-function Admin({page}){return <div className="grid"><h2>Admin / Compliance Console</h2><div className="grid cols4"><Metric label="KYC Queue" value="34"/><Metric label="Farm Verification" value="51"/><Metric label="Flags" value="7"/><Metric label="Audit events" value="1,284"/></div><div className="card"><h3>{page==='audit'?'Audit Log':page==='farm-verification'?'Farm Verification Queue':page==='content'?'Content Moderation':'KYC Queue'}</h3><div className="table-wrap"><table className="table"><thead><tr>{['Case','Role/Farm','Submission date','Status','Risk flag','Reviewer','Action'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{['Tendai Moyo','Grace Chirwa','Rudo Matema','Michael Dube'].map((u,i)=><tr key={u}><td>FL-{20260820+i}</td><td>{u}</td><td>{18+i} Aug 2026</td><td><StatusBadge status={i===0?'Under Review':i===1?'Action Required':'Submitted'}/></td><td>{i===1?<span className="pill warn">Document mismatch</span>:<span className="pill">None</span>}</td><td>{['C. Soko','P. Mlambo','Unassigned','C. Soko'][i]}</td><td><button className="btn small">Review</button></td></tr>)}</tbody></table></div></div><div className="card"><h3>Immutable-looking audit records (prototype)</h3>{['Login by admin.demo@farmlink.local','KYC review opened for Tendai Moyo','Document status changed to Action Required','Financing product published by AgriCredit Zimbabwe'].map((x,i)=><div className="doc" key={x}><span>{x}</span><span className="muted">2026-08-21 10:{42+i}</span></div>)}</div></div>}
-function NewsPage(){return <div className="grid"><h2>Agri News</h2><div className="tabs">{['Zimbabwe Agriculture','Markets','Commodities','Weather','Policy','Finance','Technology','Agribusiness','International Agriculture'].map((t,i)=><button className={'tab '+(i===0?'active':'')} key={t}>{t}</button>)}</div><div className="grid cols3">{news.concat(news).map((n,i)=><div className="card" key={i+n.title}><span className="pill info">{n.cat}</span><h3 style={{marginTop:12}}>{n.title}</h3><p className="muted">{n.source} • {n.date}</p><p>Clearly labelled mock/sample content for prototype demonstration. No real quote or institutional claim is implied.</p><button className="btn">Read More</button></div>)}</div></div>}
-function Generic({title}){return <div className="grid"><h2>{title}</h2><div className="card"><h3>Prototype module</h3><p className="muted">This area is included in the FarmLink information architecture and uses the same role-based access, empty states and compliance language.</p><div className="doc"><span>You have no pending records that match this view.</span><button className="btn small">Create sample</button></div></div></div>}
-function App(){const [role,setRole]=useState(null);const [page,setPage]=useState('overview'); if(!role)return <Landing enter={(r,p='overview')=>{setRole(r);setPage(p)}}/>; let view; if(role==='farmer') view= page==='overview'?<FarmerOverview setPage={setPage}/>:page==='onboarding'?<Onboarding type="farmer"/>:page==='farm-profile'?<FarmProfile/>:page==='financing'?<Financing/>:page==='feed'?<Feed/>:page==='documents'?<FarmProfile/>:page==='monitoring'?<FarmerOverview setPage={setPage}/>:<Generic title={page}/>; if(role==='lender') view=page==='overview'?<LenderOverview setPage={setPage}/>:page==='discovery'?<Discovery setPage={setPage}/>:page==='farm-report'||page==='reports'?<FarmReport/>:page==='applications'?<Applications/>:page==='portfolio'?<Portfolio/>:page==='products'?<Financing/>:page==='feed'?<Feed/>:page==='institution'?<Institutions/>:<Generic title={page}/>; if(role==='investor') view=page==='overview'?<InvestorOverview setPage={setPage}/>:page==='opportunities'||page==='saved'||page==='watchlist'?<Opportunities/>:page==='profile'?<Onboarding type="investor"/>:page==='education'?<NewsPage/>:page==='feed'?<Feed/>:<Generic title={page}/>; if(role==='admin') view=<Admin page={page}/>; return <Shell role={role} setRole={setRole} page={page} setPage={setPage}>{view}</Shell>}
-function Institutions(){return <div className="grid"><h2>Institution Profiles</h2><div className="grid cols3">{institutions.map(i=><div className="card" key={i.name}><Building2/><h3>{i.name}</h3><p className="muted">{i.type}</p><StatusBadge status={i.verified?'Institutional Account Verified':'Under Review'}/><p><b>Agriculture focus:</b> {i.focus}<br/><b>Regions served:</b> {i.regions}</p><button className="btn primary">View Agricultural Financing Products</button></div>)}</div></div>}
-createRoot(document.getElementById('root')).render(<App/>);
+function readRoute() {
+  const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  return {
+    scope: parts[0] || "public",
+    page: parts[1] || "home",
+    id: parts[2],
+  };
+}
+function navigate(scope, page = "overview") {
+  location.hash = `/${scope}/${page}`;
+}
+function Brand() {
+  return (
+    <span className="brand">
+      <span className="brand-mark">
+        <Sprout size={23} />
+      </span>
+      <span>
+        Farm-Capta<small>ZIMBABWE</small>
+      </span>
+    </span>
+  );
+}
+function PublicSite({ page, id, enter }) {
+  const { state } = useStore();
+  const [menu, setMenu] = useState(false);
+  const go = (p) => navigate("public", p);
+  const links = [
+    ["home", "Home"],
+    ["how", "How it works"],
+    ["farms", "Farms"],
+    ["financing", "Financing"],
+    ["news", "Agri News"],
+    ["about", "About"],
+  ];
+  return (
+    <>
+      <a
+        href="#main-content"
+        className="skip-link"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById("main-content")?.focus();
+        }}
+      >
+        Skip to content
+      </a>
+      <header className="public-top">
+        <div className="nav-wrap">
+          <button
+            className="brand-button"
+            onClick={() => go("home")}
+            aria-label="Farm-Capta home"
+          >
+            <Brand />
+          </button>
+          <nav className="public-links" aria-label="Public navigation">
+            {links.map(([p, label]) => (
+              <button
+                className={page === p ? "active" : ""}
+                key={p}
+                onClick={() => go(p)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <div className="actions">
+            <Button className="sign-in" onClick={() => go("signin")}>
+              Sign in
+            </Button>
+            <Button primary onClick={() => go("signup")}>
+              Get started <ArrowUpRight size={16} />
+            </Button>
+            <Button
+              className="mobile-menu-button"
+              aria-label="Open navigation"
+              onClick={() => setMenu(true)}
+            >
+              <Menu size={20} />
+            </Button>
+          </div>
+        </div>
+      </header>
+      <main id="main-content" tabIndex="-1">
+        {page === "home" ? (
+          <>
+            <section className="hero">
+              <div className="hero-copy">
+                <div className="eyebrow">
+                  <span className="live-dot" /> VERIFIED INFORMATION. BETTER
+                  DECISIONS.
+                </div>
+                <h1>
+                  Good land.
+                  <br />
+                  Better evidence.
+                  <br />
+                  <em>Greater possibility.</em>
+                </h1>
+                <p className="lead">
+                  Making Zimbabwean agriculture more bankable. Build a credible
+                  farm profile and connect with financing partners who can see
+                  its potential.
+                </p>
+                <div className="actions">
+                  <Button primary onClick={() => go("signup")}>
+                    Get your farm verified <ArrowUpRight size={18} />
+                  </Button>
+                  <Button onClick={() => go("signin")}>
+                    Explore lender workspace <ArrowRight size={17} />
+                  </Button>
+                </div>
+                <div className="hero-proof">
+                  <ShieldCheck size={18} />
+                  <span>Farm verification first. Informed financing next.</span>
+                </div>
+              </div>
+              <div className="hero-visual">
+                <div
+                  className="landscape"
+                  aria-label="Illustration of agricultural fields and farm evidence"
+                >
+                  <svg
+                    viewBox="0 0 560 520"
+                    role="img"
+                    aria-label="Illustrated Zimbabwean farmland"
+                  >
+                    <defs>
+                      <linearGradient id="sky" x2="0" y2="1">
+                        <stop stopColor="#dfebdd" />
+                        <stop offset="1" stopColor="#f6efd9" />
+                      </linearGradient>
+                      <pattern
+                        id="rows"
+                        width="18"
+                        height="18"
+                        patternUnits="userSpaceOnUse"
+                        patternTransform="rotate(-24)"
+                      >
+                        <path
+                          d="M0 0V18"
+                          stroke="#ffffff"
+                          strokeOpacity=".2"
+                          strokeWidth="2"
+                        />
+                      </pattern>
+                    </defs>
+                    <rect width="560" height="520" fill="url(#sky)" />
+                    <circle cx="416" cy="108" r="54" fill="#e5bd68" />
+                    <path
+                      d="M0 231Q100 132 241 195T560 168V520H0Z"
+                      fill="#849d72"
+                    />
+                    <path
+                      d="M0 300L190 217 360 298 560 216V520H0Z"
+                      fill="#4b7553"
+                    />
+                    <path
+                      d="M0 375L244 275 460 382 560 343V520H0Z"
+                      fill="#c0c792"
+                    />
+                    <path d="M0 453L278 346 560 450V520H0Z" fill="#274f3f" />
+                    <path
+                      d="M0 300L190 217 360 298 560 216V520H0Z"
+                      fill="url(#rows)"
+                    />
+                    <path
+                      d="M340 198L280 257 321 302 245 349 324 407 247 520"
+                      fill="none"
+                      stroke="#f3e5ba"
+                      strokeWidth="9"
+                    />
+                    <rect
+                      x="131"
+                      y="261"
+                      width="39"
+                      height="23"
+                      fill="#f5ead1"
+                    />
+                    <path d="M123 262L150 244 178 262Z" fill="#304c3c" />
+                    <circle
+                      cx="364"
+                      cy="311"
+                      r="20"
+                      fill="#f5f8ef"
+                      fillOpacity=".2"
+                    />
+                    <circle cx="364" cy="311" r="8" fill="#f7faf2" />
+                  </svg>
+                  <span className="map-label">
+                    <MapPin size={14} /> Mashonaland Central · illustrated
+                  </span>
+                </div>
+                <div className="evidence-card">
+                  <span className="evidence-icon">
+                    <ShieldCheck size={22} />
+                  </span>
+                  <div>
+                    <small>THE VALUE OF VERIFIED DATA</small>
+                    <strong>
+                      From farm potential
+                      <br />
+                      to financing intelligence.
+                    </strong>
+                  </div>
+                  <ArrowUpRight size={20} />
+                </div>
+                <div className="hero-caption">
+                  <span>01 / THE FARM-CAPTA VISION</span>
+                  <span>Our land, Our Agriculture, Our future.</span>
+                </div>
+              </div>
+            </section>
+            <section className="trust-strip">
+              <span>BUILT AROUND TRUST</span>
+              <p>
+                <Check size={16} /> Identity & tenure evidence
+              </p>
+              <p>
+                <Check size={16} /> Structured farm profiles
+              </p>
+              <p>
+                <Check size={16} /> Informed lender decisions
+              </p>
+            </section>
+            <section className="section">
+              <div className="split section-title">
+                <div>
+                  <div className="eyebrow">A clearer path forward</div>
+                  <h2>
+                    Turn farm information
+                    <br />
+                    into opportunity.
+                  </h2>
+                </div>
+                <p className="muted intro-copy">
+                  One connected workflow, from the first document to a
+                  better-informed financing conversation.
+                </p>
+              </div>
+              <div className="process-grid">
+                {[
+                  [
+                    "01",
+                    "Build your profile",
+                    "Record your land, production, water access and market relationships.",
+                  ],
+                  [
+                    "02",
+                    "Verify the evidence",
+                    "Bring identity, tenure documents and operational records together for review.",
+                  ],
+                  [
+                    "03",
+                    "Connect with confidence",
+                    "Help financing partners assess your farm through structured, transparent information.",
+                  ],
+                ].map(([n, t, d]) => (
+                  <article key={n}>
+                    <span>{n}</span>
+                    <h3>{t}</h3>
+                    <p className="muted">{d}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className="section featured">
+              <div className="split section-title">
+                <div>
+                  <div className="eyebrow">The agricultural landscape</div>
+                  <h2>Meet the farms behind the data.</h2>
+                </div>
+                <Button onClick={() => go("farms")}>
+                  Explore farms <ArrowUpRight size={16} />
+                </Button>
+              </div>
+              <div className="grid cols3">
+                {state.farms.slice(0, 3).map((f) => (
+                  <FarmCard key={f.id} farm={f} go={go} publicView />
+                ))}
+              </div>
+              <p className="small-text muted">
+                Fictional profiles for demonstration. Each badge describes its
+                current evidence-review status.
+              </p>
+            </section>
+            <section className="section">
+              <div className="partner-section">
+                <div>
+                  <div className="eyebrow">For financing institutions</div>
+                  <h2>
+                    Less fragmented information.
+                    <br />
+                    More informed decisions.
+                  </h2>
+                  <p>
+                    Discover farms, review evidence, manage applications and
+                    understand your agricultural portfolio in one focused
+                    workspace.
+                  </p>
+                  <Button onClick={() => go("signin")}>
+                    Open the lender demo <ArrowUpRight size={16} />
+                  </Button>
+                </div>
+                <div className="partner-quote">
+                  <ShieldCheck size={30} />
+                  <p>
+                    Verification is the foundation.
+                    <br />
+                    Agricultural intelligence is the advantage.
+                  </p>
+                  <small>B2B VERIFICATION & DATA SERVICES</small>
+                </div>
+              </div>
+            </section>
+            <section className="section final-cta">
+              <div className="eyebrow">
+                Our land, Our Agriculture, Our future.
+              </div>
+              <h2>Make the potential visible.</h2>
+              <Button primary onClick={() => go("signup")}>
+                Build your farm profile <ArrowUpRight size={17} />
+              </Button>
+              <p className="muted">
+                A proof of concept built for Zimbabwe’s agricultural future.
+              </p>
+            </section>
+          </>
+        ) : page === "signin" || page === "signup" ? (
+          <Auth mode={page} enter={enter} />
+        ) : (
+          <div className="public-content">
+            {page === "farms" ? (
+              <>
+                <Heading
+                  title="Agricultural profiles"
+                  description="Explore fictional farms and their evidence-review status."
+                />
+                <div className="grid cols3">
+                  {state.farms.map((f) => (
+                    <FarmCard key={f.id} farm={f} go={go} publicView />
+                  ))}
+                </div>
+              </>
+            ) : page === "business-profile" ? (
+              <FarmProfile
+                role="public"
+                publicView
+                id={id}
+                go={(p) =>
+                  ["feed", "messages"].includes(p) ? go("signin") : go(p)
+                }
+              />
+            ) : page === "financing" ? (
+              <Financing role="public" go={go} institutionId={id} />
+            ) : page === "news" || page === "article" ? (
+              <News id={id} go={go} />
+            ) : page === "how" ? (
+              <>
+                <Heading
+                  eyebrow="From evidence to opportunity"
+                  title="How Farm-Capta works"
+                  description="A structured path to credible agricultural information."
+                />
+                <div className="grid cols3">
+                  {[
+                    [
+                      "Farmers & landowners",
+                      "Complete identity, farm, tenure, production and consent steps. Track your evidence as it is reviewed.",
+                    ],
+                    [
+                      "Lenders & institutions",
+                      "Discover farms, assess due-diligence reports and manage financing applications using standardised information.",
+                    ],
+                    [
+                      "Verification & monitoring",
+                      "Review documents, request corrections, record decisions and keep seasonal farm information current.",
+                    ],
+                  ].map(([t, d]) => (
+                    <div className="card" key={t}>
+                      <h2>{t}</h2>
+                      <p>{d}</p>
+                    </div>
+                  ))}
+                </div>
+                <Button primary onClick={() => go("signup")}>
+                  Start your demo profile
+                </Button>
+              </>
+            ) : page === "about" ? (
+              <>
+                <Heading
+                  eyebrow="Agricultural verification & financing intelligence"
+                  title="Our land, Our Agriculture, Our future."
+                />
+                <div className="card editorial">
+                  <h2>Making farm potential easier to understand.</h2>
+                  <p>
+                    Farm-Capta is a Zimbabwean agricultural verification and
+                    financing intelligence proof of concept. It helps farmers
+                    build credible digital profiles and gives lenders structured
+                    evidence for financing assessment.
+                  </p>
+                  <p>
+                    The project starts as a B2B verification and data service,
+                    bringing identity, land-tenure, production and operational
+                    information into a connected workflow.
+                  </p>
+                  <h2>A foundation for the future</h2>
+                  <p>
+                    Future investment infrastructure is a longer-term ambition.
+                    Today’s prototype focuses on verification, farm intelligence
+                    and legitimate financing relationships.
+                  </p>
+                  <div className="notice">{investmentNotice}</div>
+                  <h2>Built for a controlled pilot</h2>
+                  <p>
+                    The project is being developed by two Computer Science
+                    students, with agricultural, financing and regulatory
+                    expertise sought through advisors and institutional
+                    partners.
+                  </p>
+                </div>
+              </>
+            ) : ["privacy", "terms"].includes(page) ? (
+              <>
+                <Heading
+                  title={
+                    page === "privacy" ? "Privacy in this demo" : "Demo terms"
+                  }
+                />
+                <div className="card">
+                  <p>
+                    Use fictional information only. This frontend is a local
+                    demonstration, not a live financial or identity-verification
+                    service. Demo activity is saved in your browser. Sensitive
+                    onboarding drafts and uploaded file contents remain in
+                    memory and clear when the page refreshes.
+                  </p>
+                  <p>
+                    No live investment, loan contract, payment, credit decision
+                    or external communication is made. Verification badges
+                    describe simulated review decisions.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <Empty
+                title="Page not found"
+                action="Return home"
+                onAction={() => go("home")}
+              />
+            )}
+          </div>
+        )}
+      </main>
+      <footer className="footer">
+        <Brand />
+        <p>Our land, Our Agriculture, Our future.</p>
+        <div className="actions">
+          <button onClick={() => go("about")}>About</button>
+          <button onClick={() => go("privacy")}>Privacy</button>
+          <button onClick={() => go("terms")}>Demo terms</button>
+        </div>
+        <small>{demoNotice}</small>
+      </footer>
+      {menu && (
+        <Modal title="Explore Farm-Capta" onClose={() => setMenu(false)}>
+          <nav className="drawer-nav">
+            {links.map(([p, label]) => (
+              <Button
+                key={p}
+                onClick={() => {
+                  go(p);
+                  setMenu(false);
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </nav>
+        </Modal>
+      )}
+    </>
+  );
+}
+function Auth({ mode, enter }) {
+  const [role, setRole] = useState("farmer");
+  const [error, setError] = useState("");
+  const [forgot, setForgot] = useState(false);
+  const { state } = useStore();
+  return (
+    <div className="auth-layout">
+      <div className="auth-story">
+        <div className="eyebrow">THE FARM-CAPTA WORKSPACE</div>
+        <h1>
+          See the evidence.
+          <br />
+          Understand the potential.
+        </h1>
+        <p>
+          Step into a connected demonstration of Zimbabwe’s agricultural
+          verification and financing ecosystem.
+        </p>
+        <ShieldCheck size={42} />
+        <p className="small-text">
+          Demo access is a role simulation, not production authentication. Use
+          fictional information.
+        </p>
+      </div>
+      <div className="card">
+        <Heading
+          title={
+            mode === "signup"
+              ? "Start your demo journey"
+              : "Welcome to Farm-Capta"
+          }
+          description="Choose an experience to explore."
+        />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (state.suspended.includes(role)) {
+              setError(
+                "This demo role is suspended. An admin can restore access.",
+              );
+              return;
+            }
+            enter(
+              role,
+              mode === "signup" &&
+                ["farmer", "business", "investor"].includes(role)
+                ? "onboarding"
+                : "overview",
+            );
+          }}
+        >
+          <Field
+            label="Demo role"
+            options={roles}
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value);
+              setError("");
+            }}
+            required
+          />
+          <div className="demo-account">
+            <strong>{names[role]}</strong>
+            <p>{role}.demo@farmcapta.local</p>
+            <small>
+              No real password is needed for these fictional accounts.
+            </small>
+          </div>
+          <label className="check">
+            <input type="checkbox" required />I understand that this is a local
+            demonstration.
+          </label>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          <Button primary className="full">
+            {mode === "signup" ? "Start demo profile" : "Enter demo workspace"}
+            <ArrowRight size={16} />
+          </Button>
+        </form>
+        <Button className="text-button" onClick={() => setForgot(true)}>
+          About sign-in & account recovery
+        </Button>
+        <p className="small-text muted">
+          Identity and contact verification are simulated inside onboarding. No
+          email or SMS is sent.
+        </p>
+      </div>
+      {forgot && (
+        <Modal title="Demo account access" onClose={() => setForgot(false)}>
+          <p>
+            These fictional accounts use a role selector and do not have
+            passwords to recover. Return here to reopen a demo workspace. A
+            production authentication provider can replace this demo access flow
+            when the backend is integrated.
+          </p>
+        </Modal>
+      )}
+    </div>
+  );
+}
+function GlobalSearch({ role, go }) {
+  const { state } = useStore();
+  const [query, setQuery] = useState("");
+  const results = query.trim()
+    ? [
+        ...state.farms
+          .filter((f) =>
+            `${f.name} ${f.farmer} ${f.crop}`
+              .toLowerCase()
+              .includes(query.toLowerCase()),
+          )
+          .map((f) => ({
+            label: f.name,
+            group: "Farms",
+            page: `${role === "lender" ? "farm-report" : "business-profile"}/${f.id}`,
+          })),
+        ...state.products
+          .filter(
+            (p) =>
+              p.active &&
+              `${p.type} ${p.provider}`
+                .toLowerCase()
+                .includes(query.toLowerCase()),
+          )
+          .map((p) => ({
+            label: `${p.provider} · ${p.type}`,
+            group: "Financing",
+            page:
+              role === "admin"
+                ? "institutions"
+                : `financing/${p.institutionId}`,
+          })),
+        ...state.institutions
+          .filter((i) => i.name.toLowerCase().includes(query.toLowerCase()))
+          .map((i) => ({
+            label: i.name,
+            group: "Institutions",
+            page: `institutions/${i.id}`,
+          })),
+        ...state.articles
+          .filter((a) => a.title.toLowerCase().includes(query.toLowerCase()))
+          .map((a) => ({
+            label: a.title,
+            group: "News",
+            page: role === "admin" ? "content" : `article/${a.id}`,
+          })),
+        ...state.posts
+          .filter(
+            (p) =>
+              !p.hidden && p.text.toLowerCase().includes(query.toLowerCase()),
+          )
+          .map((p) => ({
+            label: p.text.slice(0, 65),
+            group: "Posts",
+            page: role === "admin" ? "content" : "feed",
+          })),
+      ].slice(0, 8)
+    : [];
+  return (
+    <div className="global-search">
+      <label>
+        <Search size={17} />
+        <input
+          aria-label="Search farms, institutions, products and news"
+          placeholder="Search the agricultural ecosystem…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setQuery("");
+          }}
+        />
+      </label>
+      {query && (
+        <div className="search-results">
+          <div className="split">
+            <small>{results.length} results</small>
+            <button onClick={() => setQuery("")}>Close</button>
+          </div>
+          {results.length ? (
+            results.map((r, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  go(r.page);
+                  setQuery("");
+                }}
+              >
+                <small>{r.group}</small>
+                {r.label}
+              </button>
+            ))
+          ) : (
+            <p>No matches. Try a farm, crop or provider.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+function Shell({ role, page, go, enter, logout, children }) {
+  const { state, storageError } = useStore();
+  const [drawer, setDrawer] = useState(false);
+  const [switcher, setSwitcher] = useState(false);
+  const items = nav[role];
+  const unread = state.notifications.filter(
+    (n) => n.role === role && !n.read,
+  ).length;
+  const navigation = (
+    <nav className="workspace-nav" aria-label="Workspace navigation">
+      {items.map(([p, label, Icon]) => (
+        <button
+          key={p}
+          className={page === p ? "active" : ""}
+          aria-current={page === p ? "page" : undefined}
+          onClick={() => {
+            go(p);
+            setDrawer(false);
+          }}
+        >
+          <Icon size={18} />
+          {label}
+        </button>
+      ))}
+    </nav>
+  );
+  return (
+    <div className={`shell ${state.settings.compact ? "compact" : ""}`}>
+      <a
+        href="#workspace-content"
+        className="skip-link"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById("workspace-content")?.focus();
+        }}
+      >
+        Skip to content
+      </a>
+      <aside className="sidebar">
+        <button className="brand-button" onClick={() => go("overview")}>
+          <Brand />
+        </button>
+        <div className="workspace-label">
+          {role === "business" ? "Agricultural business" : role} workspace
+        </div>
+        {navigation}
+        <div className="sidebar-bottom">
+          <div className="demo-label">
+            <span className="live-dot" /> DEMO WORKSPACE
+          </div>
+          <p>
+            Fictional records.
+            <br />
+            Real possibilities.
+          </p>
+          <Button onClick={() => setSwitcher(true)}>Switch demo role</Button>
+          <button className="logout" onClick={logout}>
+            <LogOut size={16} /> Return to public site
+          </button>
+        </div>
+      </aside>
+      <div className="main">
+        <header className="topbar">
+          <GlobalSearch role={role} go={go} />
+          <div className="actions">
+            <span className="demo-chip">Prototype</span>
+            <button
+              className="notification-button"
+              onClick={() => go("notifications")}
+              aria-label={`Notifications, ${unread} unread`}
+            >
+              <Bell size={20} />
+              {unread > 0 && <span>{Math.min(unread, 99)}</span>}
+            </button>
+            <button
+              className="avatar"
+              aria-label="Open my profile"
+              onClick={() => go("profile")}
+            >
+              {state.profiles[role].name[0]}
+            </button>
+          </div>
+        </header>
+        <main id="workspace-content" tabIndex="-1" className="content">
+          {storageError && (
+            <div className="notice" role="alert">
+              Browser storage is unavailable. Changes work in this tab but
+              cannot survive refresh. Check your browser storage settings.
+            </div>
+          )}
+          {children}
+          <p className="workspace-disclaimer">{demoNotice}</p>
+        </main>
+      </div>
+      <nav className="mobile-tabs" aria-label="Primary mobile navigation">
+        {items.slice(0, 4).map(([p, label, Icon]) => (
+          <button
+            key={p}
+            className={page === p ? "active" : ""}
+            aria-current={page === p ? "page" : undefined}
+            onClick={() => go(p)}
+          >
+            <Icon size={19} />
+            <span>{label}</span>
+          </button>
+        ))}
+        <button
+          onClick={() => setDrawer(true)}
+          aria-label="Open all navigation"
+        >
+          <Menu size={19} />
+          <span>More</span>
+        </button>
+      </nav>
+      {drawer && (
+        <Modal title="Your workspace" onClose={() => setDrawer(false)}>
+          {navigation}
+          <div className="actions">
+            <Button
+              onClick={() => {
+                setDrawer(false);
+                setSwitcher(true);
+              }}
+            >
+              Switch demo role
+            </Button>
+            <Button onClick={logout}>Public site</Button>
+          </div>
+        </Modal>
+      )}
+      {switcher && (
+        <Modal
+          title="Choose a demo workspace"
+          onClose={() => setSwitcher(false)}
+        >
+          <p>
+            Role switching explores fictional experiences. It is not an
+            authorization system for real data.
+          </p>
+          <div className="role-options">
+            {roles.map((r) => (
+              <Button
+                key={r}
+                disabled={state.suspended.includes(r)}
+                onClick={() => {
+                  enter(r, "overview");
+                  setSwitcher(false);
+                }}
+              >
+                {r}
+                <small>{names[r]}</small>
+              </Button>
+            ))}
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+function View({ role, page, id, go }) {
+  const owner = ["farmer", "business"].includes(role);
+  if (page === "overview") return <Dashboard role={role} go={go} />;
+  if (page === "profile") return <Profile role={role} />;
+  if (page === "notifications") return <Notifications role={role} go={go} />;
+  if (page === "business-profile")
+    return <FarmProfile role={role} publicView id={id} go={go} />;
+  if (role === "admin" && nav.admin.some(([p]) => p === page))
+    return <Admin page={page} />;
+  if (page === "onboarding" && (owner || role === "investor"))
+    return <Onboarding role={role} go={go} />;
+  if (page === "verification" && (owner || role === "investor"))
+    return <Verification role={role} go={go} />;
+  if (page === "farm-profile" && owner)
+    return <FarmProfile role={role} go={go} />;
+  if (
+    page === "farm-report" &&
+    (role === "lender" || (owner && Number(id) === 1))
+  )
+    return <FarmProfile role={role} id={id} go={go} />;
+  if (page === "documents" && owner) return <Documents role={role} />;
+  if (["discovery", "reports"].includes(page) && role === "lender")
+    return <Discovery go={go} />;
+  if (page === "monitoring" && (owner || role === "lender"))
+    return <Monitoring role={role} />;
+  if (page === "financing" && role !== "admin")
+    return <Financing role={role} go={go} institutionId={id} />;
+  if (page === "products" && role === "lender")
+    return <Financing role={role} go={go} manage />;
+  if (page === "applications" && (owner || role === "lender"))
+    return <Applications role={role} go={go} />;
+  if (page === "portfolio" && ["lender", "investor"].includes(role))
+    return <Portfolio role={role} go={go} />;
+  if (
+    ["opportunities", "opportunity", "saved", "watchlist"].includes(page) &&
+    role === "investor"
+  )
+    return <Opportunities page={page} id={id} go={go} />;
+  if (page === "feed" && role !== "admin") return <Feed role={role} />;
+  if (["news", "article", "education"].includes(page) && role !== "admin")
+    return <News education={page === "education"} id={id} go={go} />;
+  if (["institution", "institutions"].includes(page) && role !== "admin")
+    return (
+      <Institutions
+        id={id}
+        role={role}
+        go={go}
+        manage={role === "lender" && page === "institution"}
+      />
+    );
+  if (page === "messages" && role !== "admin") return <Messages role={role} />;
+  return (
+    <Empty
+      title="This page isn’t available in your workspace"
+      text="Choose a section from your navigation or switch demo roles."
+      action="Back to overview"
+      onAction={() => go("overview")}
+    />
+  );
+}
+class ErrorBoundary extends Component {
+  state = { error: false };
+  static getDerivedStateFromError() {
+    return { error: true };
+  }
+  render() {
+    return this.state.error ? (
+      <div className="error-page">
+        <h1>Something didn’t load correctly.</h1>
+        <p>
+          Your saved demo activity remains in this browser. Reload to try again.
+        </p>
+        <Button primary onClick={() => location.reload()}>
+          Reload workspace
+        </Button>
+      </div>
+    ) : (
+      this.props.children
+    );
+  }
+}
+function App() {
+  const [route, setRoute] = useState(readRoute);
+  const [session, setSession] = useState(() => {
+    try {
+      return sessionStorage.getItem("farmcapta-role");
+    } catch {
+      return null;
+    }
+  });
+  const { state, clearSessionData } = useStore();
+  useEffect(() => {
+    const handler = () => setRoute(readRoute());
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+  useEffect(() => {
+    document.title = `${route.page.replace(/-/g, " ")} · Farm-Capta`;
+    window.scrollTo(0, 0);
+    document.querySelector("main")?.focus({ preventScroll: true });
+  }, [route.scope, route.page, route.id]);
+  const enter = (r, p) => {
+    if (!roles.includes(r) || state.suspended.includes(r)) return;
+    setSession(r);
+    try {
+      sessionStorage.setItem("farmcapta-role", r);
+    } catch {}
+    navigate(r, p);
+  };
+  const logout = () => {
+    setSession(null);
+    clearSessionData();
+    try {
+      sessionStorage.removeItem("farmcapta-role");
+    } catch {}
+    navigate("public", "home");
+  };
+  if (route.scope === "public")
+    return <PublicSite page={route.page} id={route.id} enter={enter} />;
+  if (!roles.includes(route.scope))
+    return <PublicSite page="not-found" enter={enter} />;
+  if (session !== route.scope)
+    return <PublicSite page="signin" enter={enter} />;
+  if (state.suspended.includes(session))
+    return (
+      <div className="error-page">
+        <Heading
+          title="Demo access suspended"
+          description="An admin can restore this demo account."
+        />
+        <Button onClick={logout}>Return to sign-in</Button>
+      </div>
+    );
+  const go = (p) => navigate(session, p);
+  return (
+    <Shell
+      role={session}
+      page={route.page}
+      go={go}
+      enter={enter}
+      logout={logout}
+    >
+      <Suspense
+        fallback={
+          <div className="skeleton" role="status">
+            Loading your workspace…
+          </div>
+        }
+      >
+        <View
+          key={`${session}/${route.page}/${route.id || ""}`}
+          role={session}
+          page={route.page}
+          id={route.id}
+          go={go}
+        />
+      </Suspense>
+    </Shell>
+  );
+}
+createRoot(document.getElementById("root")).render(
+  <ErrorBoundary>
+    <Provider>
+      <App />
+    </Provider>
+  </ErrorBoundary>,
+);
