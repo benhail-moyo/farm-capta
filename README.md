@@ -1,2 +1,1 @@
-run npm install 
-run npm run dev
+run npm install && npm run dev
