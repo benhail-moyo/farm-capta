@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { MapPin, ArrowUpRight, FileText, Upload, Check } from "lucide-react";
 import { useStore } from "./store.jsx";
+import { FarmMap } from "./farm-map.jsx";
+import { parseGPS } from "./locations.js";
 import {
   Button,
   Heading,
@@ -189,6 +191,7 @@ export function Discovery({ go }) {
           <FarmCard key={f.id} farm={f} go={go} />
         ))}
       </div>
+      <FarmMap farms={farms} go={go} />
       {!farms.length && (
         <Empty
           title="No matching farms"
@@ -483,6 +486,10 @@ export function FarmProfile({ role, go, id = 1, publicView = false }) {
   function save(e) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
+    if (!parseGPS(data.gps)) {
+      notify("Enter valid GPS coordinates as latitude, longitude.");
+      return;
+    }
     update(
       (s) => {
         Object.assign(
@@ -542,6 +549,7 @@ export function FarmProfile({ role, go, id = 1, publicView = false }) {
       <Tabs items={tabs} value={tab} onChange={setTab} />
       {tab === "Overview" && (
         <>
+          <FarmMap farms={[farm]} publicView={publicView} />
           <div className="grid cols3">
             <Metric label="Farm size" value={`${farm.size} ha`} />
             <Metric label="Primary activity" value={farm.crop} />
@@ -726,6 +734,7 @@ export function FarmProfile({ role, go, id = 1, publicView = false }) {
                 ["name", "Farm name"],
                 ["district", "District"],
                 ["province", "Province"],
+                ["gps", "GPS coordinates (latitude, longitude)"],
                 ["crop", "Crop"],
                 ["size", "Size (ha)"],
                 ["need", "Financing request (USD)"],

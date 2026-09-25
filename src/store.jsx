@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { initialState, safePersist, uid, stamp, names } from "./model.js";
+import { migrateFarmLocations } from "./locations.js";
 const Context = createContext(null);
 const KEY = "farmcapta-demo-v2";
 export function Provider({ children }) {
@@ -15,7 +16,7 @@ export function Provider({ children }) {
       return s?.version === 2 &&
         Array.isArray(s.farms) &&
         Array.isArray(s.audit)
-        ? s
+        ? migrateFarmLocations(s)
         : initialState();
     } catch {
       return initialState();

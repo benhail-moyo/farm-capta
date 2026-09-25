@@ -11,6 +11,14 @@
   --mint: #edf3e9;
   --gold: #d6b46c;
 }
+.farm-map-section { margin: 20px 0; }
+.farm-map { height: 420px; width: 100%; border-radius: 12px; background: #e4ebdf; z-index: 0; }
+.farm-map-pin { background: #204c3b; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 7px #20382d66; }
+.farm-map-pin span { display: block; width: 8px; height: 8px; margin: 7px; background: #d6b46c; border-radius: 50%; }
+.farm-map-pin:focus { outline: 3px solid #d6b46c; outline-offset: 3px; }
+.farm-map .leaflet-popup-content { font: 14px/1.5 "Segoe UI", Arial, sans-serif; color: #20382d; }
+.farm-map .leaflet-popup-content p { margin: 10px 0; }
+@media (max-width: 600px) { .farm-map { height: 320px; } }
 * {
   box-sizing: border-box;
 }

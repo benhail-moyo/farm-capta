@@ -1,4 +1,5 @@
 import { farms, products, institutions, news } from "./data.js";
+import { sampleGPS } from "./locations.js";
 export const roles = ["farmer", "lender", "investor", "business", "admin"];
 export const names = {
   farmer: "Tendai Moyo",
@@ -53,7 +54,7 @@ export function initialState() {
       date: f.status === "Verified" ? f.date : null,
       owner: f.id === 1 ? "farmer" : `sample-${f.id}`,
       purpose: "Seasonal inputs and production",
-      gps: "-17.32, 30.97",
+      gps: sampleGPS[f.id],
     })),
     institutions: institutions.map((x, i) => ({
       ...x,
