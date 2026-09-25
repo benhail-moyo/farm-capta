@@ -1,3 +1,4 @@
+import { DetailsButton, DraftButton } from '../components/Actions';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sprout, WalletCards, Building2, ChevronRight, CheckCircle2, MapPin, ShieldCheck } from 'lucide-react';
@@ -81,8 +82,8 @@ export default function Financing() {
                   <p className="muted">{product.docs}</p>
                 </div>
                 <div className="split" style={{marginTop:20}}>
-                  <button className="btn small">Check Eligibility</button>
-                  <button className="btn small primary">Start Application</button>
+                  <DetailsButton title={`${product.provider} ? Eligibility`} data={{Requirements:product.eligibility, Documents:product.docs, Regions:product.regions}}>Check Eligibility</DetailsButton>
+                  <DraftButton title="Start Application" storageKey={`application-${product.provider}-${product.type}`} fields={[{name:"Provider",value:product.provider},{name:"Farm name"},{name:"Amount (USD)",type:"number"},{name:"Purpose"}]}/>
                 </div>
               </div>
             ))}
@@ -112,7 +113,7 @@ export default function Financing() {
                     <p className="muted">{inst.regions}</p>
                   </div>
                 </div>
-                <button className="btn small" style={{marginTop:20}}>View Institution Profile</button>
+                <DetailsButton title={inst.name} data={inst}>View Institution Profile</DetailsButton>
               </div>
             ))}
           </div>

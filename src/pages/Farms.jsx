@@ -1,21 +1,18 @@
+import { useFarms } from '../data/FarmsContext';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sprout, ShieldCheck, MapPin, Search, SlidersHorizontal, ChevronRight, Filter } from 'lucide-react';
 import { StatusBadge, FarmCard } from '../components/common';
 
-const farms=[
- {id:1,name:'Nyika Plains Farm',farmer:'Tendai Moyo',loc:'Mazowe, Mashonaland Central',province:'Mashonaland Central',district:'Mazowe',crop:'Maize',size:120,need:85000,ready:'Strong',status:'Field Verification',date:'18 Aug 2026',tenure:'A2 offer letter',irrigation:'Borehole + pivot',offtaker:'Confirmed',score:82,history:[3.1,4.2,4.8],docs:5},
- {id:2,name:'Mupfure Agri Estate',farmer:'Grace Chirwa',loc:'Chegutu, Mashonaland West',province:'Mashonaland West',district:'Chegutu',crop:'Soybeans',size:210,need:140000,ready:'Strong',status:'Verified',date:'02 Aug 2026',tenure:'Lease',irrigation:'Dam access',offtaker:'Contracted',score:88,history:[2.2,2.8,3.3],docs:7},
- {id:3,name:'Green Valley Produce',farmer:'Farai Nyathi',loc:'Mutare, Manicaland',province:'Manicaland',district:'Mutare',crop:'Horticulture',size:38,need:42000,ready:'Moderate',status:'Document Review',date:'11 Aug 2026',tenure:'Communal/customary',irrigation:'Drip lines',offtaker:'Buyer letters',score:68,history:[1.4,1.6,1.9],docs:4},
- {id:4,name:'Umfuli Grain & Livestock',farmer:'Blessing Sibanda',loc:'Kwekwe, Midlands',province:'Midlands',district:'Kwekwe',crop:'Wheat',size:175,need:120000,ready:'Moderate',status:'Submitted',date:'06 Aug 2026',tenure:'Lease',irrigation:'Seasonal river',offtaker:'Pending',score:61,history:[2.7,3.0,2.9],docs:3},
- {id:5,name:'Mazowe Horticulture Estate',farmer:'Rudo Matema',loc:'Bindura, Mashonaland Central',province:'Mashonaland Central',district:'Bindura',crop:'Horticulture',size:62,need:65000,ready:'Strong',status:'Verified',date:'15 Aug 2026',tenure:'Title deed',irrigation:'Borehole + reservoir',offtaker:'Supermarket LOI',score:90,history:[1.9,2.4,2.8],docs:8}
-];
+
 
 const provinces=['Mashonaland Central','Mashonaland East','Mashonaland West','Midlands','Manicaland','Matabeleland North','Masvingo'];
 const crops=['Maize','Soybeans','Horticulture','Wheat','Tobacco','Cotton','Groundnuts'];
 const statuses=['Verified','Field Verification','Document Review','Submitted','Action Required'];
 
 export default function Farms() {
+  const { farms } = useFarms();
+  const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState({
     province: '',
     crop: '',
@@ -74,11 +71,11 @@ export default function Farms() {
                   onChange={(e) => setFilters({...filters, search: e.target.value})}
                 />
               </div>
-              <button className="btn small">
+              <button className="btn small" aria-expanded={showFilters} aria-controls="farm-filters" onClick={() => setShowFilters(value => !value)}>
                 <Filter size={16}/> Filters
               </button>
             </div>
-            <div className="grid cols4" style={{marginTop:20}}>
+            <div id="farm-filters" className="grid cols4" style={{marginTop:20, display: showFilters ? undefined : "none"}}>
               <select 
                 className="input"
                 value={filters.province}
@@ -118,7 +115,7 @@ export default function Farms() {
             </div>
             <div className="grid cols3" style={{marginTop:16}}>
               {filteredFarms.map(farm => (
-                <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
+                <FarmCard key={farm.id} farm={farm}/>
               ))}
             </div>
           </div>

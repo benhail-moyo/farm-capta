@@ -1,3 +1,4 @@
+import { FarmsProvider } from './data/FarmsContext';
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
@@ -53,6 +54,6 @@ function App() {
 const root = createRoot(document.getElementById('root'));
 root.render(
   <BrowserRouter>
-    <App />
+    <FarmsProvider><App /></FarmsProvider>
   </BrowserRouter>
 );

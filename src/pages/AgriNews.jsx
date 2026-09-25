@@ -1,3 +1,4 @@
+import { DetailsButton, DraftButton } from '../components/Actions';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sprout, Newspaper, Calendar, Tag, ChevronRight, Search } from 'lucide-react';
@@ -147,9 +148,7 @@ export default function AgriNews() {
                       <Tag size={14}/> {item.source}
                     </div>
                   </div>
-                  <button className="btn small" style={{marginTop:16}}>
-                    Read More <ChevronRight size={14}/>
-                  </button>
+                  <DetailsButton title={item.title} data={item.content}>Read More</DetailsButton>
                 </div>
               ))}
             </div>

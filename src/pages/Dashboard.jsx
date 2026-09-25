@@ -1,3 +1,7 @@
+import FarmEditor from '../components/FarmEditor';
+import { useFarms } from '../data/FarmsContext';
+import FarmLocation from '../components/FarmLocation';
+import { DetailsButton, DraftButton, DownloadButton, ReviewButton, UploadButton, SavedSettings } from '../components/Actions';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sprout, Home, ClipboardCheck, Tractor, WalletCards, Gauge, FolderOpen, Radio, MessageSquare, UserRound, Search, Bell, LogOut, Building2, ShieldCheck, ChartNoAxesCombined, FileCheck2, BookOpen, Eye, Heart, Flag, Settings, BriefcaseBusiness, Users, Star } from 'lucide-react';
@@ -10,13 +14,7 @@ const roles = {
   admin: { label: 'Admin', email: 'admin.demo@farmlink.local', name: 'Chipo Soko' }
 };
 
-const farms = [
-  {id:1,name:'Nyika Plains Farm',farmer:'Tendai Moyo',loc:'Mazowe, Mashonaland Central',province:'Mashonaland Central',district:'Mazowe',crop:'Maize',size:120,need:5000,ready:'Strong',status:'Field Verification',date:'18 Aug 2026',tenure:'A2 offer letter',irrigation:'Borehole + pivot',offtaker:'Confirmed',score:82,history:[3.1,4.2,4.8],docs:5},
-  {id:2,name:'Mupfure Agri Estate',farmer:'Grace Chirwa',loc:'Chegutu, Mashonaland West',province:'Mashonaland West',district:'Chegutu',crop:'Soybeans',size:210,need:8000,ready:'Strong',status:'Verified',date:'02 Aug 2026',tenure:'Lease',irrigation:'Dam access',offtaker:'Contracted',score:88,history:[2.2,2.8,3.3],docs:7},
-  {id:3,name:'Green Valley Produce',farmer:'Farai Nyathi',loc:'Mutare, Manicaland',province:'Manicaland',district:'Mutare',crop:'Horticulture',size:38,need:42000,ready:'Moderate',status:'Document Review',date:'11 Aug 2026',tenure:'Communal/customary',irrigation:'Drip lines',offtaker:'Buyer letters',score:68,history:[1.4,1.6,1.9],docs:4},
-  {id:4,name:'Umfuli Grain & Livestock',farmer:'Blessing Sibanda',loc:'Kwekwe, Midlands',province:'Midlands',district:'Kwekwe',crop:'Wheat',size:175,need:120000,ready:'Moderate',status:'Submitted',date:'06 Aug 2026',tenure:'Lease',irrigation:'Seasonal river',offtaker:'Pending',score:61,history:[2.7,3.0,2.9],docs:3},
-  {id:5,name:'Mazowe Horticulture Estate',farmer:'Rudo Matema',loc:'Bindura, Mashonaland Central',province:'Mashonaland Central',district:'Bindura',crop:'Horticulture',size:62,need:65000,ready:'Strong',status:'Verified',date:'15 Aug 2026',tenure:'Title deed',irrigation:'Borehole + reservoir',offtaker:'Supermarket LOI',score:90,history:[1.9,2.4,2.8],docs:8}
-];
+
 
 const institutions = [
   {name:'AgriCredit Zimbabwe',type:'Agricultural lender',focus:'Input finance, working capital',regions:'National',verified:true},
@@ -33,6 +31,7 @@ const opportunities = [
 function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n)}
 
 export default function Dashboard({ role, onLogout, onPageChange }) {
+  const { farms } = useFarms();
   const [currentPage, setCurrentPage] = React.useState('overview');
   const navigate = useNavigate();
 
@@ -201,11 +200,11 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
         <div className="topbar">
           <div className="search">
             <Search size={18}/>
-            <input type="text" placeholder="Search..." />
+            <select aria-label="Go to page" value={currentPage} onChange={e => setCurrentPage(e.target.value)}>{navItems[role].map(([page, Icon, label]) => <option key={page} value={page}>{label}</option>)}</select>
           </div>
           <div className="actions">
-            <button className="btn small ghost"><Bell size={18}/></button>
-            <button className="btn small ghost"><UserRound size={18}/> {roles[role].name}</button>
+            <DetailsButton title="Notifications" data="Your demo workspace is ready. Farm verification and application statuses are available from the navigation.">Notifications</DetailsButton>
+            <DetailsButton title="Account" data={roles[role]}>{roles[role].name}</DetailsButton>
           </div>
         </div>
         <div style={{padding: 24}}>
@@ -217,6 +216,7 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
 }
 
 function FarmerOverview({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -237,7 +237,7 @@ function FarmerOverview({ onPageChange }) {
           <div className="profile-cover"></div>
           <div className="split" style={{marginTop:16}}>
             <div>
-              <h3>Nyika Plains Farm</h3>
+              <h3>Nyika Plains Farm</h3><FarmLocation farm={farms[0]}/>
               <p className="muted">Mazowe, Mashonaland Central • 120 ha • Maize / Soybeans</p>
             </div>
             <StatusBadge status="Farm Location Verified"/>
@@ -265,6 +265,7 @@ function FarmerOverview({ onPageChange }) {
 }
 
 function LenderOverview({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -285,7 +286,7 @@ function LenderOverview({ onPageChange }) {
               <div key={farm.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
                 <div className="split">
                   <div>
-                    <b>{farm.name}</b>
+                    <b>{farm.name}</b><FarmLocation farm={farm}/>
                     <div className="muted">{farm.crop} • {farm.size} ha</div>
                   </div>
                   <StatusBadge status={farm.status}/>
@@ -299,7 +300,7 @@ function LenderOverview({ onPageChange }) {
           <h3>Featured Farms</h3>
           <div style={{marginTop:16}}>
             {farms.slice(0,2).map(farm => (
-              <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
+              <FarmCard key={farm.id} farm={farm}/>
             ))}
           </div>
           <button className="btn small" style={{marginTop:16}} onClick={() => onPageChange('discovery')}>Discover More Farms</button>
@@ -310,6 +311,7 @@ function LenderOverview({ onPageChange }) {
 }
 
 function InvestorOverview({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -338,7 +340,7 @@ function InvestorOverview({ onPageChange }) {
                 <div><b>{opp.target}</b><div className="muted">Target amount</div></div>
                 <div><b>{opp.duration}</b><div className="muted">Duration</div></div>
               </div>
-              <button className="btn small primary" style={{marginTop:16}}>View Details</button>
+              <DetailsButton title={opp.farm} data={opp}/><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
             </div>
           ))}
         </div>
@@ -348,6 +350,7 @@ function InvestorOverview({ onPageChange }) {
 }
 
 function AdminOverview({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -382,7 +385,7 @@ function AdminOverview({ onPageChange }) {
               <div key={farm.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
                 <div className="split">
                   <div>
-                    <b>{farm.name}</b>
+                    <b>{farm.name}</b><FarmLocation farm={farm}/>
                     <div className="muted">{farm.crop} • {farm.size} ha</div>
                   </div>
                   <StatusBadge status={farm.status}/>
@@ -399,6 +402,7 @@ function AdminOverview({ onPageChange }) {
 
 // Farmer Pages
 function FarmerOnboarding({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -436,6 +440,7 @@ function FarmerOnboarding({ onPageChange }) {
 }
 
 function FarmerProfile({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -443,30 +448,30 @@ function FarmerProfile({ onPageChange }) {
           <h2>My Farm Profile</h2>
           <p className="muted">Manage your farm information and operational details.</p>
         </div>
-        <button className="btn primary">Edit Profile</button>
+        <FarmEditor farm={farms[0]}/>
       </div>
       <div className="card">
         <div className="profile-cover"></div>
         <div style={{marginTop:16}}>
-          <h3>Nyika Plains Farm</h3>
+          <h3>Nyika Plains Farm</h3><FarmLocation farm={farms[0]}/>
           <p className="muted">Mazowe, Mashonaland Central</p>
         </div>
         <div className="grid cols2" style={{marginTop:16}}>
           <div>
             <b>Farm Size</b>
-            <div className="muted">120 hectares</div>
+            <div className="muted">{farms[0].size} hectares</div>
           </div>
           <div>
             <b>Primary Crops</b>
-            <div className="muted">Maize, Soybeans</div>
+            <div className="muted">{farms[0].crop}</div>
           </div>
           <div>
             <b>Land Tenure</b>
-            <div className="muted">A2 offer letter</div>
+            <div className="muted">{farms[0].tenure}</div>
           </div>
           <div>
             <b>Irrigation</b>
-            <div className="muted">Borehole + pivot irrigation</div>
+            <div className="muted">{farms[0].irrigation}</div>
           </div>
         </div>
       </div>
@@ -483,6 +488,7 @@ function FarmerProfile({ onPageChange }) {
 }
 
 function FarmerFinancing({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -490,7 +496,7 @@ function FarmerFinancing({ onPageChange }) {
           <h2>Financing Opportunities</h2>
           <p className="muted">View and manage your financing applications.</p>
         </div>
-        <button className="btn primary">Apply for Financing</button>
+        <DraftButton title="Apply for Financing" storageKey="financing-application-draft" fields={[{"name":"Farm name"},{"name":"Institution"},{"name":"Amount (USD)"},{"name":"Purpose"}]}/>
       </div>
       <div className="grid cols2">
         <div className="card">
@@ -534,10 +540,11 @@ function FarmerFinancing({ onPageChange }) {
 }
 
 function FarmerMonitoring({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
-        <h2>Farm Monitoring</h2>
+        <h2>Farm Monitoring</h2><FarmLocation farm={farms[0]}/>
         <p className="muted">Track your farm's performance and growth metrics.</p>
       </div>
       <div className="grid cols4">
@@ -558,6 +565,7 @@ function FarmerMonitoring({ onPageChange }) {
 }
 
 function FarmerDocuments({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -565,7 +573,7 @@ function FarmerDocuments({ onPageChange }) {
           <h2>Documents</h2>
           <p className="muted">Manage your farm documentation and certificates.</p>
         </div>
-        <button className="btn primary">Upload Document</button>
+        <UploadButton/>
       </div>
       <div className="card">
         <h3>Document Library</h3>
@@ -595,6 +603,8 @@ function FarmerDocuments({ onPageChange }) {
 
 // Lender Pages
 function LenderDiscovery({ onPageChange }) {
+  const { farms } = useFarms();
+  const [query, setQuery] = React.useState('');
   return (
     <div className="grid">
       <div className="split">
@@ -604,12 +614,12 @@ function LenderDiscovery({ onPageChange }) {
         </div>
         <div className="search">
           <Search size={18}/>
-          <input type="text" placeholder="Search farms..." />
+          <input type="search" placeholder="Search farms..." value={query} onChange={e => setQuery(e.target.value)} />
         </div>
       </div>
       <div className="grid cols3">
-        {farms.map(farm => (
-          <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
+        {farms.filter(farm => `${farm.name} ${farm.loc} ${farm.crop}`.toLowerCase().includes(query.toLowerCase())).map(farm => (
+          <FarmCard key={farm.id} farm={farm}/>
         ))}
       </div>
     </div>
@@ -617,6 +627,7 @@ function LenderDiscovery({ onPageChange }) {
 }
 
 function LenderApplications({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -632,7 +643,7 @@ function LenderApplications({ onPageChange }) {
             <div key={farm.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
               <div className="split">
                 <div>
-                  <b>{farm.name}</b>
+                  <b>{farm.name}</b><FarmLocation farm={farm}/>
                   <div className="muted">{farm.crop} • {farm.size} ha • {money(farm.need)}</div>
                 </div>
                 <StatusBadge status={farm.status}/>
@@ -646,6 +657,7 @@ function LenderApplications({ onPageChange }) {
 }
 
 function LenderPortfolio({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -665,7 +677,7 @@ function LenderPortfolio({ onPageChange }) {
             <div key={farm.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
               <div className="split">
                 <div>
-                  <b>{farm.name}</b>
+                  <b>{farm.name}</b><FarmLocation farm={farm}/>
                   <div className="muted">{farm.crop} • {money(farm.need)}</div>
                 </div>
                 <StatusBadge status="Active"/>
@@ -679,6 +691,7 @@ function LenderPortfolio({ onPageChange }) {
 }
 
 function LenderMonitoring({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -696,7 +709,7 @@ function LenderMonitoring({ onPageChange }) {
               <div key={i} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
                 <div className="split">
                   <div>
-                    <b>{alert.farm}</b>
+                    <b>{alert.farm}</b><FarmLocation farm={farms.find(farm => farm.name === alert.farm)}/>
                     <div className="muted">{alert.risk} • {alert.date}</div>
                   </div>
                   <StatusBadge status={alert.severity}/>
@@ -718,6 +731,7 @@ function LenderMonitoring({ onPageChange }) {
 }
 
 function LenderReports({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -725,7 +739,7 @@ function LenderReports({ onPageChange }) {
           <h2>Reports</h2>
           <p className="muted">Generate and view portfolio reports.</p>
         </div>
-        <button className="btn primary">Generate Report</button>
+        <DownloadButton title="Portfolio report" data={farms}>Generate Report</DownloadButton>
       </div>
       <div className="card">
         <h3>Available Reports</h3>
@@ -742,7 +756,7 @@ function LenderReports({ onPageChange }) {
                   <b>{report.name}</b>
                   <div className="muted">{report.type} • {report.date}</div>
                 </div>
-                <button className="btn small ghost">Download</button>
+                <DownloadButton title={report.name || report.title || "FarmLink report"} data={{report, farms}}/>
               </div>
             </div>
           ))}
@@ -753,6 +767,7 @@ function LenderReports({ onPageChange }) {
 }
 
 function LenderProducts({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -760,7 +775,7 @@ function LenderProducts({ onPageChange }) {
           <h2>Financing Products</h2>
           <p className="muted">Manage your available financing products.</p>
         </div>
-        <button className="btn primary">Add Product</button>
+        <DraftButton title="Add Product" storageKey="new-product-draft" fields={[{"name":"Name"},{"name":"Interest rate"},{"name":"Term"},{"name":"Minimum amount"},{"name":"Maximum amount"}]}/>
       </div>
       <div className="grid cols2">
         {[
@@ -777,7 +792,7 @@ function LenderProducts({ onPageChange }) {
               <div><b>Minimum</b><div className="muted">{product.min}</div></div>
               <div><b>Maximum</b><div className="muted">{product.max}</div></div>
             </div>
-            <button className="btn small" style={{marginTop:16}}>Edit Product</button>
+            <DraftButton title="Edit Product" storageKey={`product-${product.name}`} fields={Object.entries(product).map(([name,value]) => ({name,value}))}/>
           </div>
         ))}
       </div>
@@ -786,6 +801,7 @@ function LenderProducts({ onPageChange }) {
 }
 
 function InstitutionProfile({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -793,7 +809,7 @@ function InstitutionProfile({ onPageChange }) {
           <h2>Institution Profile</h2>
           <p className="muted">Manage your lending institution profile.</p>
         </div>
-        <button className="btn primary">Edit Profile</button>
+        <DraftButton title="Edit Profile" storageKey="institution-profile-draft" fields={[{"name":"Institution name"},{"name":"Focus areas"},{"name":"Coverage"}]}/>
       </div>
       <div className="card">
         <h3>AgriCredit Zimbabwe</h3>
@@ -819,6 +835,7 @@ function InstitutionProfile({ onPageChange }) {
 
 // Investor Pages
 function InvestorOpportunities({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -849,7 +866,7 @@ function InvestorOpportunities({ onPageChange }) {
               <div className="muted"><b>Risk Level:</b> {opp.risk}</div>
               <div className="muted">{opp.perf}</div>
             </div>
-            <button className="btn small primary" style={{marginTop:16}}>View Details</button>
+            <DetailsButton title={opp.farm} data={opp}/><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
           </div>
         ))}
       </div>
@@ -858,6 +875,8 @@ function InvestorOpportunities({ onPageChange }) {
 }
 
 function InvestorSaved({ onPageChange }) {
+  const { farms } = useFarms();
+  const [removed, setRemoved] = React.useState(() => { try { return JSON.parse(localStorage.getItem('removed-opportunities')) || []; } catch { return []; } });
   return (
     <div className="grid">
       <div>
@@ -865,16 +884,16 @@ function InvestorSaved({ onPageChange }) {
         <p className="muted">Your bookmarked investment opportunities.</p>
       </div>
       <div className="card">
-        <h3>Saved Items</h3>
+        <h3>Saved Items</h3>{removed.length > 0 && <button className="btn small" onClick={() => { setRemoved([]); try { localStorage.removeItem("removed-opportunities"); } catch {} }}>Restore demo opportunities</button>}{removed.length >= 2 && <p>No saved opportunities.</p>}
         <div style={{marginTop:16}}>
-          {opportunities.slice(0,2).map(opp => (
+          {opportunities.slice(0,2).filter(opp => !removed.includes(opp.id)).map(opp => (
             <div key={opp.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
               <div className="split">
                 <div>
-                  <b>{opp.farm}</b>
+                  <b>{opp.farm}</b><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
                   <div className="muted">{opp.crop} • {opp.target} • {opp.risk}</div>
                 </div>
-                <button className="btn small ghost">Remove</button>
+                <button className="btn small ghost" onClick={() => { const next = [...removed, opp.id]; setRemoved(next); try { localStorage.setItem('removed-opportunities', JSON.stringify(next)); } catch {} }}>Remove</button>
               </div>
             </div>
           ))}
@@ -885,6 +904,7 @@ function InvestorSaved({ onPageChange }) {
 }
 
 function InvestorWatchlist({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -898,7 +918,7 @@ function InvestorWatchlist({ onPageChange }) {
             <div key={farm.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
               <div className="split">
                 <div>
-                  <b>{farm.name}</b>
+                  <b>{farm.name}</b><FarmLocation farm={farm}/>
                   <div className="muted">{farm.crop} • {farm.status}</div>
                 </div>
                 <StatusBadge status={farm.status}/>
@@ -912,6 +932,7 @@ function InvestorWatchlist({ onPageChange }) {
 }
 
 function InvestorPortfolio({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -931,7 +952,7 @@ function InvestorPortfolio({ onPageChange }) {
             <div key={opp.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
               <div className="split">
                 <div>
-                  <b>{opp.farm}</b>
+                  <b>{opp.farm}</b><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
                   <div className="muted">{opp.crop} • {opp.target} • {opp.duration}</div>
                 </div>
                 <StatusBadge status="Active"/>
@@ -945,6 +966,7 @@ function InvestorPortfolio({ onPageChange }) {
 }
 
 function InvestorEducation({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -964,7 +986,7 @@ function InvestorEducation({ onPageChange }) {
               <div className="muted">{course.category}</div>
               <div className="muted">{course.duration}</div>
             </div>
-            <button className="btn small primary" style={{marginTop:16}}>Start Learning</button>
+            <DetailsButton title={course.title} data={{...course, lesson: "Review farm production records, confirm tenure and water access, and compare seasonal budgets with expected income. Verification evidence should be checked before making financing decisions."}}>Start Learning</DetailsButton>
           </div>
         ))}
       </div>
@@ -974,6 +996,7 @@ function InvestorEducation({ onPageChange }) {
 
 // Shared Pages
 function AgriFeed({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1003,6 +1026,7 @@ function AgriFeed({ onPageChange }) {
 }
 
 function Messages({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -1010,7 +1034,7 @@ function Messages({ onPageChange }) {
           <h2>Messages</h2>
           <p className="muted">Communicate with farmers, lenders, and support.</p>
         </div>
-        <button className="btn primary">New Message</button>
+        <DraftButton title="New Message" storageKey="message-draft" fields={[{"name":"Recipient"},{"name":"Subject"},{"name":"Message"}]}/>
       </div>
       <div className="card">
         <h3>Inbox</h3>
@@ -1036,51 +1060,13 @@ function Messages({ onPageChange }) {
   );
 }
 
-function UserProfile({ onPageChange, role }) {
-  const userData = roles[role];
-  return (
-    <div className="grid">
-      <div className="split">
-        <div>
-          <h2>Profile Settings</h2>
-          <p className="muted">Manage your account information and preferences.</p>
-        </div>
-        <button className="btn primary">Save Changes</button>
-      </div>
-      <div className="card">
-        <h3>Personal Information</h3>
-        <div className="grid cols2" style={{marginTop:16}}>
-          <div>
-            <label>Full Name</label>
-            <input type="text" defaultValue={userData.name} style={{width:'100%',padding:8,marginTop:4}}/>
-          </div>
-          <div>
-            <label>Email</label>
-            <input type="email" defaultValue={userData.email} style={{width:'100%',padding:8,marginTop:4}}/>
-          </div>
-          <div>
-            <label>Role</label>
-            <input type="text" defaultValue={userData.label} disabled style={{width:'100%',padding:8,marginTop:4,background:'#f5f5f5'}}/>
-          </div>
-          <div>
-            <label>Phone</label>
-            <input type="tel" placeholder="+263..." style={{width:'100%',padding:8,marginTop:4}}/>
-          </div>
-        </div>
-      </div>
-      <div className="card" style={{marginTop:16}}>
-        <h3>Security</h3>
-        <div style={{marginTop:16}}>
-          <button className="btn small">Change Password</button>
-          <button className="btn small ghost">Enable Two-Factor Auth</button>
-        </div>
-      </div>
-    </div>
-  );
+function UserProfile({ role }) {
+  return <div className="grid"><h2>Profile Settings</h2><SavedSettings key={role} storageKey={`profile-${role}`} title="Personal Information" fields={[{name:'Full Name',value:roles[role].name},{name:'Email',value:roles[role].email,type:'email'},{name:'Phone',value:'',type:'tel'}]}/><DetailsButton title="Account security" data="This workspace uses demo role sign-in. Password changes and two-factor authentication require a connected authentication service.">Account security</DetailsButton></div>;
 }
 
 // Admin Pages
 function AdminKYC({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1103,7 +1089,7 @@ function AdminKYC({ onPageChange }) {
                 </div>
                 <div>
                   <StatusBadge status={item.priority}/>
-                  <button className="btn small" style={{marginLeft:8}}>Review</button>
+                  <ReviewButton title={item.name || "KYC review"} data={item}/>
                 </div>
               </div>
             </div>
@@ -1115,6 +1101,7 @@ function AdminKYC({ onPageChange }) {
 }
 
 function AdminFarmVerification({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1128,12 +1115,12 @@ function AdminFarmVerification({ onPageChange }) {
             <div key={farm.id} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
               <div className="split">
                 <div>
-                  <b>{farm.name}</b>
+                  <b>{farm.name}</b><FarmLocation farm={farm}/>
                   <div className="muted">{farm.crop} • {farm.size} ha • {farm.farmer}</div>
                 </div>
                 <div>
                   <StatusBadge status={farm.status}/>
-                  <button className="btn small" style={{marginLeft:8}}>Review</button>
+                  <ReviewButton title={farm.name} data={{Farmer: farm.farmer, Status: farm.status, Documents: farm.docs}}/>
                 </div>
               </div>
             </div>
@@ -1145,6 +1132,7 @@ function AdminFarmVerification({ onPageChange }) {
 }
 
 function AdminUsers({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -1152,7 +1140,7 @@ function AdminUsers({ onPageChange }) {
           <h2>User Management</h2>
           <p className="muted">Manage platform users and access controls.</p>
         </div>
-        <button className="btn primary">Add User</button>
+        <DraftButton title="Add User" storageKey="new-user-draft" fields={[{"name":"Name"},{"name":"Email"},{"name":"Role"}]}/>
       </div>
       <div className="card">
         <h3>All Users</h3>
@@ -1175,6 +1163,7 @@ function AdminUsers({ onPageChange }) {
 }
 
 function AdminInstitutions({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -1182,7 +1171,7 @@ function AdminInstitutions({ onPageChange }) {
           <h2>Institution Management</h2>
           <p className="muted">Manage lending institutions and their verification status.</p>
         </div>
-        <button className="btn primary">Add Institution</button>
+        <DraftButton title="Add Institution" storageKey="new-institution-draft" fields={[{"name":"Name"},{"name":"Type"},{"name":"Focus"},{"name":"Regions"}]}/>
       </div>
       <div className="card">
         <h3>Registered Institutions</h3>
@@ -1205,6 +1194,7 @@ function AdminInstitutions({ onPageChange }) {
 }
 
 function AdminContent({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1225,8 +1215,7 @@ function AdminContent({ onPageChange }) {
                   <div className="muted">{item.user} • {item.flag} • {item.date}</div>
                 </div>
                 <div>
-                  <button className="btn small ghost">Approve</button>
-                  <button className="btn small ghost" style={{marginLeft:8}}>Reject</button>
+                  <ReviewButton title={item.title || "Content review"} data={item}/>
                 </div>
               </div>
             </div>
@@ -1238,6 +1227,7 @@ function AdminContent({ onPageChange }) {
 }
 
 function AdminReports({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1259,7 +1249,7 @@ function AdminReports({ onPageChange }) {
                     <b>{report.name}</b>
                     <div className="muted">{report.period} • {report.generated}</div>
                   </div>
-                  <button className="btn small ghost">Download</button>
+                  <DownloadButton title={report.name || report.title || "FarmLink report"} data={{report, farms}}/>
                 </div>
               </div>
             ))}
@@ -1290,6 +1280,7 @@ function AdminReports({ onPageChange }) {
 }
 
 function AdminAudit({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1321,58 +1312,6 @@ function AdminAudit({ onPageChange }) {
   );
 }
 
-function AdminSettings({ onPageChange }) {
-  return (
-    <div className="grid">
-      <div className="split">
-        <div>
-          <h2>Platform Settings</h2>
-          <p className="muted">Configure system-wide settings and preferences.</p>
-        </div>
-        <button className="btn primary">Save Settings</button>
-      </div>
-      <div className="grid cols2">
-        <div className="card">
-          <h3>General Settings</h3>
-          <div style={{marginTop:16}}>
-            <div style={{marginBottom:16}}>
-              <label>Platform Name</label>
-              <input type="text" defaultValue="FarmLink" style={{width:'100%',padding:8,marginTop:4}}/>
-            </div>
-            <div style={{marginBottom:16}}>
-              <label>Support Email</label>
-              <input type="email" defaultValue="support@farmlink.local" style={{width:'100%',padding:8,marginTop:4}}/>
-            </div>
-            <div>
-              <label>Default Currency</label>
-              <select style={{width:'100%',padding:8,marginTop:4}}>
-                <option>USD - US Dollar</option>
-                <option>ZWL - Zimbabwe Dollar</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <h3>Security Settings</h3>
-          <div style={{marginTop:16}}>
-            <div style={{marginBottom:16}}>
-              <label>
-                <input type="checkbox" defaultChecked/> Require two-factor authentication
-              </label>
-            </div>
-            <div style={{marginBottom:16}}>
-              <label>
-                <input type="checkbox" defaultChecked/> Enable audit logging
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="checkbox" defaultChecked/> Auto-logout after inactivity
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function AdminSettings() {
+  return <div className="grid"><h2>Platform Settings</h2><SavedSettings storageKey="platform-settings" title="General Settings" fields={[{name:'Platform Name',value:'FarmLink'},{name:'Support Email',value:'support@farmlink.local',type:'email'},{name:'Default Currency',value:'USD'}]}/><p className="notice">Preferences are saved on this device. Authentication and audit policy require a connected server.</p></div>;
 }

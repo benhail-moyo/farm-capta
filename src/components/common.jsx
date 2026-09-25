@@ -1,3 +1,5 @@
+import FarmLocation from './FarmLocation';
+import { DetailsButton } from './Actions';
 import React from 'react';
 import { CheckCircle2, Clock3, ShieldCheck, ChartNoAxesCombined } from 'lucide-react';
 
@@ -44,7 +46,7 @@ export function ChartCard({title,children,sub}) {
   );
 }
 
-export function FarmCard({farm,onOpen}) {
+export function FarmCard({farm}) {
   return (
     <div className="card">
       <div className="split">
@@ -65,9 +67,7 @@ export function FarmCard({farm,onOpen}) {
       </div>
       <div className="split">
         <span className="pill">{farm.ready}</span>
-        <button className="btn small primary" onClick={()=>onOpen(farm.id)}>
-          View Farm Report <ShieldCheck size={15}/>
-        </button>
+        <div className="farm-actions"><FarmLocation farm={farm}/><DetailsButton title={`${farm.name} ? Farm Report`} data={{Farmer: farm.farmer, Location: farm.loc, Crop: farm.crop, Hectares: farm.size, Status: farm.status, Tenure: farm.tenure, Irrigation: farm.irrigation, Readiness: farm.ready, "Readiness score": farm.score, "Financing need (USD)": farm.need}}>View Farm Report</DetailsButton></div>
       </div>
     </div>
   );

@@ -1,3 +1,6 @@
+import { useFarms } from '../data/FarmsContext';
+import FarmLocation from '../components/FarmLocation';
+import { DetailsButton } from '../components/Actions';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Landmark, Tractor, Sprout, ChevronRight, CheckCircle2, MapPin, UserRound, WalletCards, ClipboardCheck, Gauge, FolderOpen, Radio, MessageSquare, BookOpen, Eye, Heart, Building2, ChartNoAxesCombined, FileCheck2, Newspaper, Bell, Menu, Search, Plus, SlidersHorizontal, Flag, Settings, BriefcaseBusiness, LogOut, CircleDollarSign } from 'lucide-react';
@@ -6,13 +9,7 @@ import { StatusBadge, Metric, ChartCard, FarmCard } from '../components/common';
 function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n)}
 
 const provinces=['Mashonaland Central','Mashonaland East','Mashonaland West','Midlands','Manicaland','Matabeleland North','Masvingo'];
-const farms=[
- {id:1,name:'Nyika Plains Farm',farmer:'Tendai Moyo',loc:'Mazowe, Mashonaland Central',province:'Mashonaland Central',district:'Mazowe',crop:'Maize',size:120,need:85000,ready:'Strong',status:'Field Verification',date:'18 Aug 2026',tenure:'A2 offer letter',irrigation:'Borehole + pivot',offtaker:'Confirmed',score:82,history:[3.1,4.2,4.8],docs:5},
- {id:2,name:'Mupfure Agri Estate',farmer:'Grace Chirwa',loc:'Chegutu, Mashonaland West',province:'Mashonaland West',district:'Chegutu',crop:'Soybeans',size:210,need:140000,ready:'Strong',status:'Verified',date:'02 Aug 2026',tenure:'Lease',irrigation:'Dam access',offtaker:'Contracted',score:88,history:[2.2,2.8,3.3],docs:7},
- {id:3,name:'Green Valley Produce',farmer:'Farai Nyathi',loc:'Mutare, Manicaland',province:'Manicaland',district:'Mutare',crop:'Horticulture',size:38,need:42000,ready:'Moderate',status:'Document Review',date:'11 Aug 2026',tenure:'Communal/customary',irrigation:'Drip lines',offtaker:'Buyer letters',score:68,history:[1.4,1.6,1.9],docs:4},
- {id:4,name:'Umfuli Grain & Livestock',farmer:'Blessing Sibanda',loc:'Kwekwe, Midlands',province:'Midlands',district:'Kwekwe',crop:'Wheat',size:175,need:120000,ready:'Moderate',status:'Submitted',date:'06 Aug 2026',tenure:'Lease',irrigation:'Seasonal river',offtaker:'Pending',score:61,history:[2.7,3.0,2.9],docs:3},
- {id:5,name:'Mazowe Horticulture Estate',farmer:'Rudo Matema',loc:'Bindura, Mashonaland Central',province:'Mashonaland Central',district:'Bindura',crop:'Horticulture',size:62,need:65000,ready:'Strong',status:'Verified',date:'15 Aug 2026',tenure:'Title deed',irrigation:'Borehole + reservoir',offtaker:'Supermarket LOI',score:90,history:[1.9,2.4,2.8],docs:8}
-];
+
 const institutions=[
  {name:'AgriCredit Zimbabwe',type:'Agricultural lender',focus:'Input finance, working capital',regions:'National',verified:true},
  {name:'Zambezi Microfinance',type:'Microfinance',focus:'Smallholder production loans',regions:'Mashonaland, Midlands',verified:true},
@@ -25,6 +22,7 @@ const news=[
 ];
 
 export default function Home() {
+  const { farms } = useFarms();
   return (
     <div>
       <header className="public-top">
@@ -61,7 +59,7 @@ export default function Home() {
             <div className="map-card">
               <div>
                 <span className="pill">Trust layer active</span>
-                <h2 style={{color:'white',marginTop:14}}>Farm intelligence map</h2>
+                <h2 style={{color:'white',marginTop:14}}>Farm intelligence map</h2><FarmLocation farm={farms[0]}/>
                 <p style={{color:'#dbe9df'}}>Fictional demonstration data across Mashonaland, Midlands, Manicaland and Masvingo.</p>
               </div>
               <div className="floating">
@@ -107,7 +105,7 @@ export default function Home() {
           </div>
           <div className="grid cols3" style={{marginTop:24}}>
             {farms.slice(0,3).map(farm => (
-              <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
+              <FarmCard key={farm.id} farm={farm}/>
             ))}
           </div>
         </section>
@@ -137,7 +135,7 @@ export default function Home() {
                   <b>Regions</b>
                   <p className="muted">{inst.regions}</p>
                 </div>
-                <button className="btn small" style={{marginTop:16}}>View Profile</button>
+                <DetailsButton title={inst.name} data={inst}>View Profile</DetailsButton>
               </div>
             ))}
           </div>
