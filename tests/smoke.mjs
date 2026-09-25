@@ -49,6 +49,9 @@ try {
   await page.getByPlaceholder('Enter your email').fill('demo@example.com');
   await page.getByPlaceholder('Enter your password').fill('demo');
   await page.locator('form button[type=submit]').click();
+  await page.getByRole('heading', { name: 'Good morning, Tendai', exact: true }).waitFor();
+  assert.deepEqual(errors, [], 'Farmer sign-in must render without runtime errors');
+  assert.equal(new URL(page.url()).pathname, '/dashboard');
   await page.getByLabel('Go to page').selectOption('farm-profile');
   await page.getByRole('button', { name: 'Edit Profile', exact: true }).click();
   await page.getByLabel('Latitude', { exact: true }).fill('-17.6');
@@ -64,6 +67,7 @@ try {
     for (const value of options) {
       await page.getByLabel('Go to page').selectOption(value);
       await page.waitForTimeout(70);
+      assert.deepEqual(errors, [], `${role}:${value} must render without runtime errors`);
       assert.ok(await page.locator('main').innerText(), role + ':' + value);
     }
   }

@@ -5,7 +5,7 @@ import { DetailsButton, DraftButton, DownloadButton, ReviewButton, UploadButton,
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sprout, Home, ClipboardCheck, Tractor, WalletCards, Gauge, FolderOpen, Radio, MessageSquare, UserRound, Search, Bell, LogOut, Building2, ShieldCheck, ChartNoAxesCombined, FileCheck2, BookOpen, Eye, Heart, Flag, Settings, BriefcaseBusiness, Users, Star, Upload, Send, FileText, Check } from 'lucide-react';
-import { StatusBadge, Metric, ChartCard, FarmCard, Modal } from '../components/common';
+import { StatusBadge, Metric, ChartCard, FarmCard } from '../components/common';
 
 const roles = {
   farmer: { label: 'Farmer', email: 'farmer.demo@farmlink.local', name: 'Tendai Moyo' },
@@ -31,22 +31,8 @@ const opportunities = [
 function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n)}
 
 export default function Dashboard({ role, onLogout, onPageChange }) {
-  const { farms } = useFarms();
   const [currentPage, setCurrentPage] = React.useState('overview');
   const navigate = useNavigate();
-  
-  // Modal states
-  const [editProfileModal, setEditProfileModal] = React.useState(false);
-  const [applyFinancingModal, setApplyFinancingModal] = React.useState(false);
-  const [uploadDocumentModal, setUploadDocumentModal] = React.useState(false);
-  const [farmDetailsModal, setFarmDetailsModal] = React.useState(false);
-  const [selectedFarm, setSelectedFarm] = React.useState(null);
-  const [newMessageModal, setNewMessageModal] = React.useState(false);
-  const [productModal, setProductModal] = React.useState(false);
-  const [selectedProduct, setSelectedProduct] = React.useState(null);
-  const [institutionModal, setInstitutionModal] = React.useState(false);
-  const [userModal, setUserModal] = React.useState(false);
-  const [settingsModal, setSettingsModal] = React.useState(false);
 
   const handleLogout = () => {
     onLogout();
@@ -119,30 +105,30 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
     switch(currentPage) {
       case 'overview': return <FarmerOverview onPageChange={setCurrentPage} />;
       case 'onboarding': return <FarmerOnboarding onPageChange={setCurrentPage} />;
-      case 'farm-profile': return <FarmerProfile onPageChange={setCurrentPage} onEditProfile={() => setEditProfileModal(true)} />;
-      case 'financing': return <FarmerFinancing onPageChange={setCurrentPage} onApplyFinancing={() => setApplyFinancingModal(true)} />;
+      case 'farm-profile': return <FarmerProfile onPageChange={setCurrentPage} />;
+      case 'financing': return <FarmerFinancing onPageChange={setCurrentPage} />;
       case 'monitoring': return <FarmerMonitoring onPageChange={setCurrentPage} />;
-      case 'documents': return <FarmerDocuments onPageChange={setCurrentPage} onUploadDocument={() => setUploadDocumentModal(true)} />;
+      case 'documents': return <FarmerDocuments onPageChange={setCurrentPage} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
-      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} onEditProfile={() => setEditProfileModal(true)} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} />;
+      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} />;
       default: return <FarmerOverview onPageChange={setCurrentPage} />;
     }
   };
 
   const renderLenderContent = () => {
     switch(currentPage) {
-      case 'overview': return <LenderOverview onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
-      case 'discovery': return <LenderDiscovery onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
+      case 'overview': return <LenderOverview onPageChange={setCurrentPage} />;
+      case 'discovery': return <LenderDiscovery onPageChange={setCurrentPage} />;
       case 'applications': return <LenderApplications onPageChange={setCurrentPage} />;
       case 'portfolio': return <LenderPortfolio onPageChange={setCurrentPage} />;
       case 'monitoring': return <LenderMonitoring onPageChange={setCurrentPage} />;
       case 'reports': return <LenderReports onPageChange={setCurrentPage} />;
-      case 'products': return <LenderProducts onPageChange={setCurrentPage} onProductClick={handleProductClick} />;
+      case 'products': return <LenderProducts onPageChange={setCurrentPage} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
-      case 'institution': return <InstitutionProfile onPageChange={setCurrentPage} onEditInstitution={() => setInstitutionModal(true)} />;
-      default: return <LenderOverview onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} />;
+      case 'institution': return <InstitutionProfile onPageChange={setCurrentPage} />;
+      default: return <LenderOverview onPageChange={setCurrentPage} />;
     }
   };
 
@@ -155,8 +141,8 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
       case 'portfolio': return <InvestorPortfolio onPageChange={setCurrentPage} />;
       case 'education': return <InvestorEducation onPageChange={setCurrentPage} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
-      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} onEditProfile={() => setEditProfileModal(true)} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} />;
+      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} />;
       default: return <InvestorOverview onPageChange={setCurrentPage} />;
     }
   };
@@ -165,26 +151,15 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
     switch(currentPage) {
       case 'overview': return <AdminOverview onPageChange={setCurrentPage} />;
       case 'kyc': return <AdminKYC onPageChange={setCurrentPage} />;
-      case 'farm-verification': return <AdminFarmVerification onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
-      case 'users': return <AdminUsers onPageChange={setCurrentPage} onAddUser={() => setUserModal(true)} />;
-      case 'institutions': return <AdminInstitutions onPageChange={setCurrentPage} onAddInstitution={() => setInstitutionModal(true)} />;
+      case 'farm-verification': return <AdminFarmVerification onPageChange={setCurrentPage} />;
+      case 'users': return <AdminUsers onPageChange={setCurrentPage} />;
+      case 'institutions': return <AdminInstitutions onPageChange={setCurrentPage} />;
       case 'content': return <AdminContent onPageChange={setCurrentPage} />;
       case 'reports': return <AdminReports onPageChange={setCurrentPage} />;
       case 'audit': return <AdminAudit onPageChange={setCurrentPage} />;
-      case 'settings': return <AdminSettings onPageChange={setCurrentPage} onOpenSettings={() => setSettingsModal(true)} />;
+      case 'settings': return <AdminSettings onPageChange={setCurrentPage} />;
       default: return <AdminOverview onPageChange={setCurrentPage} />;
     }
-  };
-
-  const handleFarmCardClick = (farmId) => {
-    const farm = farms.find(f => f.id === farmId);
-    setSelectedFarm(farm);
-    setFarmDetailsModal(true);
-  };
-
-  const handleProductClick = (product) => {
-    setSelectedProduct(product);
-    setProductModal(true);
   };
 
   return (
@@ -236,17 +211,6 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
           {renderDashboardContent()}
         </div>
       </main>
-      
-      {/* Modals */}
-      <EditProfileModal isOpen={editProfileModal} onClose={() => setEditProfileModal(false)} role={role} />
-      <ApplyFinancingModal isOpen={applyFinancingModal} onClose={() => setApplyFinancingModal(false)} />
-      <UploadDocumentModal isOpen={uploadDocumentModal} onClose={() => setUploadDocumentModal(false)} />
-      <FarmDetailsModal isOpen={farmDetailsModal} onClose={() => setFarmDetailsModal(false)} farm={selectedFarm} />
-      <NewMessageModal isOpen={newMessageModal} onClose={() => setNewMessageModal(false)} />
-      <ProductModal isOpen={productModal} onClose={() => setProductModal(false)} product={selectedProduct} />
-      <InstitutionModal isOpen={institutionModal} onClose={() => setInstitutionModal(false)} />
-      <UserModal isOpen={userModal} onClose={() => setUserModal(false)} />
-      <SettingsModal isOpen={settingsModal} onClose={() => setSettingsModal(false)} />
     </div>
   );
 }
@@ -301,6 +265,7 @@ function FarmerOverview({ onPageChange }) {
 }
 
 function LenderOverview({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -475,6 +440,7 @@ function FarmerOnboarding({ onPageChange }) {
 }
 
 function FarmerProfile({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -482,7 +448,7 @@ function FarmerProfile({ onPageChange }) {
           <h2>My Farm Profile</h2>
           <p className="muted">Manage your farm information and operational details.</p>
         </div>
-        <button className="btn primary">Edit Profile</button>
+        <FarmEditor farm={farms[0]}/>
       </div>
       <div className="card">
         <div className="profile-cover"></div>
@@ -635,6 +601,8 @@ function FarmerDocuments({ onPageChange }) {
 
 // Lender Pages
 function LenderDiscovery({ onPageChange }) {
+  const [query, setQuery] = React.useState('');
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -648,7 +616,7 @@ function LenderDiscovery({ onPageChange }) {
         </div>
       </div>
       <div className="grid cols3">
-        {farms.map(farm => (
+        {farms.filter(farm => `${farm.name} ${farm.loc} ${farm.crop}`.toLowerCase().includes(query.toLowerCase())).map(farm => (
           <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
         ))}
       </div>
@@ -769,7 +737,7 @@ function LenderReports({ onPageChange }) {
           <h2>Reports</h2>
           <p className="muted">Generate and view portfolio reports.</p>
         </div>
-        <button className="btn primary">Generate Report</button>
+        <DownloadButton title="Portfolio report" data={farms}>Generate Report</DownloadButton>
       </div>
       <div className="card">
         <h3>Available Reports</h3>
@@ -797,6 +765,12 @@ function LenderReports({ onPageChange }) {
 }
 
 function LenderProducts({ onPageChange }) {
+  const products = [
+    {name: 'Input Finance Program', rate: '12%', term: '6-12 months', min: '$10,000', max: '$200,000'},
+    {name: 'Working Capital Loan', rate: '14%', term: '3-9 months', min: '$5,000', max: '$100,000'},
+    {name: 'Equipment Financing', rate: '10%', term: '12-24 months', min: '$20,000', max: '$500,000'},
+    {name: 'Seasonal Credit Line', rate: '11%', term: 'Variable', min: '$15,000', max: '$300,000'}
+  ];
   return (
     <div className="grid">
       <div className="split">
@@ -916,7 +890,7 @@ function InvestorSaved({ onPageChange }) {
                   <b>{opp.farm}</b><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
                   <div className="muted">{opp.crop} • {opp.target} • {opp.risk}</div>
                 </div>
-                <button className="btn small ghost">Remove</button>
+                <button className="btn small ghost" onClick={() => { const next = [...removed, opp.id]; setRemoved(next); try { localStorage.setItem("removed-opportunities", JSON.stringify(next)); } catch {} }}>Remove</button>
               </div>
             </div>
           ))}
@@ -1162,6 +1136,7 @@ function AdminKYC({ onPageChange }) {
 }
 
 function AdminFarmVerification({ onPageChange }) {
+  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
