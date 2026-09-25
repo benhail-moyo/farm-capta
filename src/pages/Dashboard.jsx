@@ -4,8 +4,8 @@ import FarmLocation from '../components/FarmLocation';
 import { DetailsButton, DraftButton, DownloadButton, ReviewButton, UploadButton, SavedSettings } from '../components/Actions';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sprout, Home, ClipboardCheck, Tractor, WalletCards, Gauge, FolderOpen, Radio, MessageSquare, UserRound, Search, Bell, LogOut, Building2, ShieldCheck, ChartNoAxesCombined, FileCheck2, BookOpen, Eye, Heart, Flag, Settings, BriefcaseBusiness, Users, Star } from 'lucide-react';
-import { StatusBadge, Metric, ChartCard, FarmCard } from '../components/common';
+import { Sprout, Home, ClipboardCheck, Tractor, WalletCards, Gauge, FolderOpen, Radio, MessageSquare, UserRound, Search, Bell, LogOut, Building2, ShieldCheck, ChartNoAxesCombined, FileCheck2, BookOpen, Eye, Heart, Flag, Settings, BriefcaseBusiness, Users, Star, Upload, Send, FileText, Check } from 'lucide-react';
+import { StatusBadge, Metric, ChartCard, FarmCard, Modal } from '../components/common';
 
 const roles = {
   farmer: { label: 'Farmer', email: 'farmer.demo@farmlink.local', name: 'Tendai Moyo' },
@@ -34,6 +34,19 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
   const { farms } = useFarms();
   const [currentPage, setCurrentPage] = React.useState('overview');
   const navigate = useNavigate();
+  
+  // Modal states
+  const [editProfileModal, setEditProfileModal] = React.useState(false);
+  const [applyFinancingModal, setApplyFinancingModal] = React.useState(false);
+  const [uploadDocumentModal, setUploadDocumentModal] = React.useState(false);
+  const [farmDetailsModal, setFarmDetailsModal] = React.useState(false);
+  const [selectedFarm, setSelectedFarm] = React.useState(null);
+  const [newMessageModal, setNewMessageModal] = React.useState(false);
+  const [productModal, setProductModal] = React.useState(false);
+  const [selectedProduct, setSelectedProduct] = React.useState(null);
+  const [institutionModal, setInstitutionModal] = React.useState(false);
+  const [userModal, setUserModal] = React.useState(false);
+  const [settingsModal, setSettingsModal] = React.useState(false);
 
   const handleLogout = () => {
     onLogout();
@@ -106,30 +119,30 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
     switch(currentPage) {
       case 'overview': return <FarmerOverview onPageChange={setCurrentPage} />;
       case 'onboarding': return <FarmerOnboarding onPageChange={setCurrentPage} />;
-      case 'farm-profile': return <FarmerProfile onPageChange={setCurrentPage} />;
-      case 'financing': return <FarmerFinancing onPageChange={setCurrentPage} />;
+      case 'farm-profile': return <FarmerProfile onPageChange={setCurrentPage} onEditProfile={() => setEditProfileModal(true)} />;
+      case 'financing': return <FarmerFinancing onPageChange={setCurrentPage} onApplyFinancing={() => setApplyFinancingModal(true)} />;
       case 'monitoring': return <FarmerMonitoring onPageChange={setCurrentPage} />;
-      case 'documents': return <FarmerDocuments onPageChange={setCurrentPage} />;
+      case 'documents': return <FarmerDocuments onPageChange={setCurrentPage} onUploadDocument={() => setUploadDocumentModal(true)} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} />;
-      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
+      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} onEditProfile={() => setEditProfileModal(true)} />;
       default: return <FarmerOverview onPageChange={setCurrentPage} />;
     }
   };
 
   const renderLenderContent = () => {
     switch(currentPage) {
-      case 'overview': return <LenderOverview onPageChange={setCurrentPage} />;
-      case 'discovery': return <LenderDiscovery onPageChange={setCurrentPage} />;
+      case 'overview': return <LenderOverview onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
+      case 'discovery': return <LenderDiscovery onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
       case 'applications': return <LenderApplications onPageChange={setCurrentPage} />;
       case 'portfolio': return <LenderPortfolio onPageChange={setCurrentPage} />;
       case 'monitoring': return <LenderMonitoring onPageChange={setCurrentPage} />;
       case 'reports': return <LenderReports onPageChange={setCurrentPage} />;
-      case 'products': return <LenderProducts onPageChange={setCurrentPage} />;
+      case 'products': return <LenderProducts onPageChange={setCurrentPage} onProductClick={handleProductClick} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} />;
-      case 'institution': return <InstitutionProfile onPageChange={setCurrentPage} />;
-      default: return <LenderOverview onPageChange={setCurrentPage} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
+      case 'institution': return <InstitutionProfile onPageChange={setCurrentPage} onEditInstitution={() => setInstitutionModal(true)} />;
+      default: return <LenderOverview onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
     }
   };
 
@@ -142,7 +155,8 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
       case 'portfolio': return <InvestorPortfolio onPageChange={setCurrentPage} />;
       case 'education': return <InvestorEducation onPageChange={setCurrentPage} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
+      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} onEditProfile={() => setEditProfileModal(true)} />;
       default: return <InvestorOverview onPageChange={setCurrentPage} />;
     }
   };
@@ -151,15 +165,26 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
     switch(currentPage) {
       case 'overview': return <AdminOverview onPageChange={setCurrentPage} />;
       case 'kyc': return <AdminKYC onPageChange={setCurrentPage} />;
-      case 'farm-verification': return <AdminFarmVerification onPageChange={setCurrentPage} />;
-      case 'users': return <AdminUsers onPageChange={setCurrentPage} />;
-      case 'institutions': return <AdminInstitutions onPageChange={setCurrentPage} />;
+      case 'farm-verification': return <AdminFarmVerification onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
+      case 'users': return <AdminUsers onPageChange={setCurrentPage} onAddUser={() => setUserModal(true)} />;
+      case 'institutions': return <AdminInstitutions onPageChange={setCurrentPage} onAddInstitution={() => setInstitutionModal(true)} />;
       case 'content': return <AdminContent onPageChange={setCurrentPage} />;
       case 'reports': return <AdminReports onPageChange={setCurrentPage} />;
       case 'audit': return <AdminAudit onPageChange={setCurrentPage} />;
-      case 'settings': return <AdminSettings onPageChange={setCurrentPage} />;
+      case 'settings': return <AdminSettings onPageChange={setCurrentPage} onOpenSettings={() => setSettingsModal(true)} />;
       default: return <AdminOverview onPageChange={setCurrentPage} />;
     }
+  };
+
+  const handleFarmCardClick = (farmId) => {
+    const farm = farms.find(f => f.id === farmId);
+    setSelectedFarm(farm);
+    setFarmDetailsModal(true);
+  };
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setProductModal(true);
   };
 
   return (
@@ -211,6 +236,17 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
           {renderDashboardContent()}
         </div>
       </main>
+      
+      {/* Modals */}
+      <EditProfileModal isOpen={editProfileModal} onClose={() => setEditProfileModal(false)} role={role} />
+      <ApplyFinancingModal isOpen={applyFinancingModal} onClose={() => setApplyFinancingModal(false)} />
+      <UploadDocumentModal isOpen={uploadDocumentModal} onClose={() => setUploadDocumentModal(false)} />
+      <FarmDetailsModal isOpen={farmDetailsModal} onClose={() => setFarmDetailsModal(false)} farm={selectedFarm} />
+      <NewMessageModal isOpen={newMessageModal} onClose={() => setNewMessageModal(false)} />
+      <ProductModal isOpen={productModal} onClose={() => setProductModal(false)} product={selectedProduct} />
+      <InstitutionModal isOpen={institutionModal} onClose={() => setInstitutionModal(false)} />
+      <UserModal isOpen={userModal} onClose={() => setUserModal(false)} />
+      <SettingsModal isOpen={settingsModal} onClose={() => setSettingsModal(false)} />
     </div>
   );
 }
@@ -265,7 +301,6 @@ function FarmerOverview({ onPageChange }) {
 }
 
 function LenderOverview({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -300,7 +335,7 @@ function LenderOverview({ onPageChange }) {
           <h3>Featured Farms</h3>
           <div style={{marginTop:16}}>
             {farms.slice(0,2).map(farm => (
-              <FarmCard key={farm.id} farm={farm}/>
+              <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
             ))}
           </div>
           <button className="btn small" style={{marginTop:16}} onClick={() => onPageChange('discovery')}>Discover More Farms</button>
@@ -340,7 +375,7 @@ function InvestorOverview({ onPageChange }) {
                 <div><b>{opp.target}</b><div className="muted">Target amount</div></div>
                 <div><b>{opp.duration}</b><div className="muted">Duration</div></div>
               </div>
-              <DetailsButton title={opp.farm} data={opp}/><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
+              <button className="btn small primary" style={{marginTop:16}}>View Details</button>
             </div>
           ))}
         </div>
@@ -440,7 +475,6 @@ function FarmerOnboarding({ onPageChange }) {
 }
 
 function FarmerProfile({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -448,7 +482,7 @@ function FarmerProfile({ onPageChange }) {
           <h2>My Farm Profile</h2>
           <p className="muted">Manage your farm information and operational details.</p>
         </div>
-        <FarmEditor farm={farms[0]}/>
+        <button className="btn primary">Edit Profile</button>
       </div>
       <div className="card">
         <div className="profile-cover"></div>
@@ -478,9 +512,9 @@ function FarmerProfile({ onPageChange }) {
       <div className="card" style={{marginTop:16}}>
         <h3>Production History</h3>
         <div className="grid cols3" style={{marginTop:16}}>
-          <ChartCard title="Yield Trend" data={[3.1, 4.2, 4.8]} labels={['2024', '2025', '2026']} unit="t/ha"/>
-          <ChartCard title="Revenue" data={[85000, 92000, 98000]} labels={['2024', '2025', '2026']} unit="USD"/>
-          <ChartCard title="Input Costs" data={[32000, 35000, 38000]} labels={['2024', '2025', '2026']} unit="USD"/>
+          <ChartCard title="Yield Trend" data={[3.1, 4.2, 4.8]} labels={['2024', '2025', '2026']} unit="t/ha"></ChartCard>
+          <ChartCard title="Revenue" data={[85000, 92000, 98000]} labels={['2024', '2025', '2026']} unit="USD"></ChartCard>
+          <ChartCard title="Input Costs" data={[32000, 35000, 38000]} labels={['2024', '2025', '2026']} unit="USD"></ChartCard>
         </div>
       </div>
     </div>
@@ -488,7 +522,6 @@ function FarmerProfile({ onPageChange }) {
 }
 
 function FarmerFinancing({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -496,7 +529,7 @@ function FarmerFinancing({ onPageChange }) {
           <h2>Financing Opportunities</h2>
           <p className="muted">View and manage your financing applications.</p>
         </div>
-        <DraftButton title="Apply for Financing" storageKey="financing-application-draft" fields={[{"name":"Farm name"},{"name":"Institution"},{"name":"Amount (USD)"},{"name":"Purpose"}]}/>
+        <button className="btn primary">Apply for Financing</button>
       </div>
       <div className="grid cols2">
         <div className="card">
@@ -556,8 +589,8 @@ function FarmerMonitoring({ onPageChange }) {
       <div className="card" style={{marginTop:16}}>
         <h3>Crop Performance</h3>
         <div className="grid cols2" style={{marginTop:16}}>
-          <ChartCard title="Growth Progress" data={[20, 45, 68, 82]} labels={['Week 2', 'Week 4', 'Week 6', 'Week 8']} unit="%"/>
-          <ChartCard title="Yield Projection" data={[3.8, 4.1, 4.5, 4.8]} labels={["Month 1", "Month 2", "Month 3", "Harvest"]} unit="t/ha"/>
+          <ChartCard title="Growth Progress" data={[20, 45, 68, 82]} labels={['Week 2', 'Week 4', 'Week 6', 'Week 8']} unit="%"></ChartCard>
+          <ChartCard title="Yield Projection" data={[3.8, 4.1, 4.5, 4.8]} labels={["Month 1", "Month 2", "Month 3", "Harvest"]} unit="t/ha"></ChartCard>
         </div>
       </div>
     </div>
@@ -565,7 +598,6 @@ function FarmerMonitoring({ onPageChange }) {
 }
 
 function FarmerDocuments({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -573,7 +605,7 @@ function FarmerDocuments({ onPageChange }) {
           <h2>Documents</h2>
           <p className="muted">Manage your farm documentation and certificates.</p>
         </div>
-        <UploadButton/>
+        <button className="btn primary">Upload Document</button>
       </div>
       <div className="card">
         <h3>Document Library</h3>
@@ -603,8 +635,6 @@ function FarmerDocuments({ onPageChange }) {
 
 // Lender Pages
 function LenderDiscovery({ onPageChange }) {
-  const { farms } = useFarms();
-  const [query, setQuery] = React.useState('');
   return (
     <div className="grid">
       <div className="split">
@@ -618,8 +648,8 @@ function LenderDiscovery({ onPageChange }) {
         </div>
       </div>
       <div className="grid cols3">
-        {farms.filter(farm => `${farm.name} ${farm.loc} ${farm.crop}`.toLowerCase().includes(query.toLowerCase())).map(farm => (
-          <FarmCard key={farm.id} farm={farm}/>
+        {farms.map(farm => (
+          <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
         ))}
       </div>
     </div>
@@ -721,8 +751,8 @@ function LenderMonitoring({ onPageChange }) {
         <div className="card">
           <h3>Performance Metrics</h3>
           <div className="grid cols2" style={{marginTop:16}}>
-            <ChartCard title="Repayment Rate" data={[92, 94, 95, 94]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="%"/>
-            <ChartCard title="Portfolio Growth" data={[350, 420, 455, 485]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="k$"/>
+            <ChartCard title="Repayment Rate" data={[92, 94, 95, 94]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="%"></ChartCard>
+            <ChartCard title="Portfolio Growth" data={[350, 420, 455, 485]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="k$"></ChartCard>
           </div>
         </div>
       </div>
@@ -739,7 +769,7 @@ function LenderReports({ onPageChange }) {
           <h2>Reports</h2>
           <p className="muted">Generate and view portfolio reports.</p>
         </div>
-        <DownloadButton title="Portfolio report" data={farms}>Generate Report</DownloadButton>
+        <button className="btn primary">Generate Report</button>
       </div>
       <div className="card">
         <h3>Available Reports</h3>
@@ -756,7 +786,7 @@ function LenderReports({ onPageChange }) {
                   <b>{report.name}</b>
                   <div className="muted">{report.type} • {report.date}</div>
                 </div>
-                <DownloadButton title={report.name || report.title || "FarmLink report"} data={{report, farms}}/>
+                <button className="btn small ghost">Download</button>
               </div>
             </div>
           ))}
@@ -767,7 +797,6 @@ function LenderReports({ onPageChange }) {
 }
 
 function LenderProducts({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -775,15 +804,10 @@ function LenderProducts({ onPageChange }) {
           <h2>Financing Products</h2>
           <p className="muted">Manage your available financing products.</p>
         </div>
-        <DraftButton title="Add Product" storageKey="new-product-draft" fields={[{"name":"Name"},{"name":"Interest rate"},{"name":"Term"},{"name":"Minimum amount"},{"name":"Maximum amount"}]}/>
+        <button className="btn primary">Add Product</button>
       </div>
       <div className="grid cols2">
-        {[
-          {name: 'Input Finance Program', rate: '12%', term: '6-12 months', min: '$10,000', max: '$200,000'},
-          {name: 'Working Capital Loan', rate: '14%', term: '3-9 months', min: '$5,000', max: '$100,000'},
-          {name: 'Equipment Financing', rate: '10%', term: '12-24 months', min: '$20,000', max: '$500,000'},
-          {name: 'Seasonal Credit Line', rate: '11%', term: 'Variable', min: '$15,000', max: '$300,000'}
-        ].map((product, i) => (
+        {products.map((product, i) => (
           <div key={i} className="card">
             <h3>{product.name}</h3>
             <div className="grid cols2" style={{marginTop:16}}>
@@ -792,7 +816,7 @@ function LenderProducts({ onPageChange }) {
               <div><b>Minimum</b><div className="muted">{product.min}</div></div>
               <div><b>Maximum</b><div className="muted">{product.max}</div></div>
             </div>
-            <DraftButton title="Edit Product" storageKey={`product-${product.name}`} fields={Object.entries(product).map(([name,value]) => ({name,value}))}/>
+            <button className="btn small" style={{marginTop:16}}>Edit Product</button>
           </div>
         ))}
       </div>
@@ -801,7 +825,6 @@ function LenderProducts({ onPageChange }) {
 }
 
 function InstitutionProfile({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -809,7 +832,7 @@ function InstitutionProfile({ onPageChange }) {
           <h2>Institution Profile</h2>
           <p className="muted">Manage your lending institution profile.</p>
         </div>
-        <DraftButton title="Edit Profile" storageKey="institution-profile-draft" fields={[{"name":"Institution name"},{"name":"Focus areas"},{"name":"Coverage"}]}/>
+        <button className="btn primary">Edit Profile</button>
       </div>
       <div className="card">
         <h3>AgriCredit Zimbabwe</h3>
@@ -866,7 +889,7 @@ function InvestorOpportunities({ onPageChange }) {
               <div className="muted"><b>Risk Level:</b> {opp.risk}</div>
               <div className="muted">{opp.perf}</div>
             </div>
-            <DetailsButton title={opp.farm} data={opp}/><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
+            <button className="btn small primary" style={{marginTop:16}}>View Details</button>
           </div>
         ))}
       </div>
@@ -893,7 +916,7 @@ function InvestorSaved({ onPageChange }) {
                   <b>{opp.farm}</b><FarmLocation farm={farms.find(farm => farm.name === opp.farm)}/>
                   <div className="muted">{opp.crop} • {opp.target} • {opp.risk}</div>
                 </div>
-                <button className="btn small ghost" onClick={() => { const next = [...removed, opp.id]; setRemoved(next); try { localStorage.setItem('removed-opportunities', JSON.stringify(next)); } catch {} }}>Remove</button>
+                <button className="btn small ghost">Remove</button>
               </div>
             </div>
           ))}
@@ -986,7 +1009,7 @@ function InvestorEducation({ onPageChange }) {
               <div className="muted">{course.category}</div>
               <div className="muted">{course.duration}</div>
             </div>
-            <DetailsButton title={course.title} data={{...course, lesson: "Review farm production records, confirm tenure and water access, and compare seasonal budgets with expected income. Verification evidence should be checked before making financing decisions."}}>Start Learning</DetailsButton>
+            <button className="btn small primary" style={{marginTop:16}}>Start Learning</button>
           </div>
         ))}
       </div>
@@ -1026,7 +1049,6 @@ function AgriFeed({ onPageChange }) {
 }
 
 function Messages({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -1034,7 +1056,7 @@ function Messages({ onPageChange }) {
           <h2>Messages</h2>
           <p className="muted">Communicate with farmers, lenders, and support.</p>
         </div>
-        <DraftButton title="New Message" storageKey="message-draft" fields={[{"name":"Recipient"},{"name":"Subject"},{"name":"Message"}]}/>
+        <button className="btn primary">New Message</button>
       </div>
       <div className="card">
         <h3>Inbox</h3>
@@ -1060,8 +1082,47 @@ function Messages({ onPageChange }) {
   );
 }
 
-function UserProfile({ role }) {
-  return <div className="grid"><h2>Profile Settings</h2><SavedSettings key={role} storageKey={`profile-${role}`} title="Personal Information" fields={[{name:'Full Name',value:roles[role].name},{name:'Email',value:roles[role].email,type:'email'},{name:'Phone',value:'',type:'tel'}]}/><DetailsButton title="Account security" data="This workspace uses demo role sign-in. Password changes and two-factor authentication require a connected authentication service.">Account security</DetailsButton></div>;
+function UserProfile({ onPageChange, role }) {
+  const userData = roles[role];
+  return (
+    <div className="grid">
+      <div className="split">
+        <div>
+          <h2>Profile Settings</h2>
+          <p className="muted">Manage your account information and preferences.</p>
+        </div>
+        <button className="btn primary">Save Changes</button>
+      </div>
+      <div className="card">
+        <h3>Personal Information</h3>
+        <div className="grid cols2" style={{marginTop:16}}>
+          <div>
+            <label>Full Name</label>
+            <input type="text" defaultValue={userData.name} style={{width:'100%',padding:8,marginTop:4}}/>
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" defaultValue={userData.email} style={{width:'100%',padding:8,marginTop:4}}/>
+          </div>
+          <div>
+            <label>Role</label>
+            <input type="text" defaultValue={userData.label} disabled style={{width:'100%',padding:8,marginTop:4,background:'#f5f5f5'}}/>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input type="tel" placeholder="+263..." style={{width:'100%',padding:8,marginTop:4}}/>
+          </div>
+        </div>
+      </div>
+      <div className="card" style={{marginTop:16}}>
+        <h3>Security</h3>
+        <div style={{marginTop:16}}>
+          <button className="btn small">Change Password</button>
+          <button className="btn small ghost">Enable Two-Factor Auth</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Admin Pages
@@ -1089,7 +1150,7 @@ function AdminKYC({ onPageChange }) {
                 </div>
                 <div>
                   <StatusBadge status={item.priority}/>
-                  <ReviewButton title={item.name || "KYC review"} data={item}/>
+                  <button className="btn small" style={{marginLeft:8}}>Review</button>
                 </div>
               </div>
             </div>
@@ -1101,7 +1162,6 @@ function AdminKYC({ onPageChange }) {
 }
 
 function AdminFarmVerification({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div>
@@ -1120,7 +1180,7 @@ function AdminFarmVerification({ onPageChange }) {
                 </div>
                 <div>
                   <StatusBadge status={farm.status}/>
-                  <ReviewButton title={farm.name} data={{Farmer: farm.farmer, Status: farm.status, Documents: farm.docs}}/>
+                  <button className="btn small" style={{marginLeft:8}}>Review</button>
                 </div>
               </div>
             </div>
@@ -1132,7 +1192,6 @@ function AdminFarmVerification({ onPageChange }) {
 }
 
 function AdminUsers({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -1140,7 +1199,7 @@ function AdminUsers({ onPageChange }) {
           <h2>User Management</h2>
           <p className="muted">Manage platform users and access controls.</p>
         </div>
-        <DraftButton title="Add User" storageKey="new-user-draft" fields={[{"name":"Name"},{"name":"Email"},{"name":"Role"}]}/>
+        <button className="btn primary">Add User</button>
       </div>
       <div className="card">
         <h3>All Users</h3>
@@ -1163,7 +1222,6 @@ function AdminUsers({ onPageChange }) {
 }
 
 function AdminInstitutions({ onPageChange }) {
-  const { farms } = useFarms();
   return (
     <div className="grid">
       <div className="split">
@@ -1171,7 +1229,7 @@ function AdminInstitutions({ onPageChange }) {
           <h2>Institution Management</h2>
           <p className="muted">Manage lending institutions and their verification status.</p>
         </div>
-        <DraftButton title="Add Institution" storageKey="new-institution-draft" fields={[{"name":"Name"},{"name":"Type"},{"name":"Focus"},{"name":"Regions"}]}/>
+        <button className="btn primary">Add Institution</button>
       </div>
       <div className="card">
         <h3>Registered Institutions</h3>
@@ -1215,7 +1273,8 @@ function AdminContent({ onPageChange }) {
                   <div className="muted">{item.user} • {item.flag} • {item.date}</div>
                 </div>
                 <div>
-                  <ReviewButton title={item.title || "Content review"} data={item}/>
+                  <button className="btn small ghost">Approve</button>
+                  <button className="btn small ghost" style={{marginLeft:8}}>Reject</button>
                 </div>
               </div>
             </div>
@@ -1249,7 +1308,7 @@ function AdminReports({ onPageChange }) {
                     <b>{report.name}</b>
                     <div className="muted">{report.period} • {report.generated}</div>
                   </div>
-                  <DownloadButton title={report.name || report.title || "FarmLink report"} data={{report, farms}}/>
+                  <button className="btn small ghost">Download</button>
                 </div>
               </div>
             ))}
@@ -1312,6 +1371,58 @@ function AdminAudit({ onPageChange }) {
   );
 }
 
-function AdminSettings() {
-  return <div className="grid"><h2>Platform Settings</h2><SavedSettings storageKey="platform-settings" title="General Settings" fields={[{name:'Platform Name',value:'FarmLink'},{name:'Support Email',value:'support@farmlink.local',type:'email'},{name:'Default Currency',value:'USD'}]}/><p className="notice">Preferences are saved on this device. Authentication and audit policy require a connected server.</p></div>;
+function AdminSettings({ onPageChange }) {
+  return (
+    <div className="grid">
+      <div className="split">
+        <div>
+          <h2>Platform Settings</h2>
+          <p className="muted">Configure system-wide settings and preferences.</p>
+        </div>
+        <button className="btn primary">Save Settings</button>
+      </div>
+      <div className="grid cols2">
+        <div className="card">
+          <h3>General Settings</h3>
+          <div style={{marginTop:16}}>
+            <div style={{marginBottom:16}}>
+              <label>Platform Name</label>
+              <input type="text" defaultValue="FarmLink" style={{width:'100%',padding:8,marginTop:4}}/>
+            </div>
+            <div style={{marginBottom:16}}>
+              <label>Support Email</label>
+              <input type="email" defaultValue="support@farmlink.local" style={{width:'100%',padding:8,marginTop:4}}/>
+            </div>
+            <div>
+              <label>Default Currency</label>
+              <select style={{width:'100%',padding:8,marginTop:4}}>
+                <option>USD - US Dollar</option>
+                <option>ZWL - Zimbabwe Dollar</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <h3>Security Settings</h3>
+          <div style={{marginTop:16}}>
+            <div style={{marginBottom:16}}>
+              <label>
+                <input type="checkbox" defaultChecked/> Require two-factor authentication
+              </label>
+            </div>
+            <div style={{marginBottom:16}}>
+              <label>
+                <input type="checkbox" defaultChecked/> Enable audit logging
+              </label>
+            </div>
+            <div>
+              <label>
+                <input type="checkbox" defaultChecked/> Auto-logout after inactivity
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
