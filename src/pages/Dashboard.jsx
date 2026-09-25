@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sprout, Home, ClipboardCheck, Tractor, WalletCards, Gauge, FolderOpen, Radio, MessageSquare, UserRound, Search, Bell, LogOut, Building2, ShieldCheck, ChartNoAxesCombined, FileCheck2, BookOpen, Eye, Heart, Flag, Settings, BriefcaseBusiness, Users, Star } from 'lucide-react';
-import { StatusBadge, Metric, ChartCard, FarmCard } from '../components/common';
+import { Sprout, Home, ClipboardCheck, Tractor, WalletCards, Gauge, FolderOpen, Radio, MessageSquare, UserRound, Search, Bell, LogOut, Building2, ShieldCheck, ChartNoAxesCombined, FileCheck2, BookOpen, Eye, Heart, Flag, Settings, BriefcaseBusiness, Users, Star, Upload, Send, FileText, Check } from 'lucide-react';
+import { StatusBadge, Metric, ChartCard, FarmCard, Modal } from '../components/common';
 
 const roles = {
   farmer: { label: 'Farmer', email: 'farmer.demo@farmlink.local', name: 'Tendai Moyo' },
@@ -35,6 +35,19 @@ function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currenc
 export default function Dashboard({ role, onLogout, onPageChange }) {
   const [currentPage, setCurrentPage] = React.useState('overview');
   const navigate = useNavigate();
+  
+  // Modal states
+  const [editProfileModal, setEditProfileModal] = React.useState(false);
+  const [applyFinancingModal, setApplyFinancingModal] = React.useState(false);
+  const [uploadDocumentModal, setUploadDocumentModal] = React.useState(false);
+  const [farmDetailsModal, setFarmDetailsModal] = React.useState(false);
+  const [selectedFarm, setSelectedFarm] = React.useState(null);
+  const [newMessageModal, setNewMessageModal] = React.useState(false);
+  const [productModal, setProductModal] = React.useState(false);
+  const [selectedProduct, setSelectedProduct] = React.useState(null);
+  const [institutionModal, setInstitutionModal] = React.useState(false);
+  const [userModal, setUserModal] = React.useState(false);
+  const [settingsModal, setSettingsModal] = React.useState(false);
 
   const handleLogout = () => {
     onLogout();
@@ -107,30 +120,30 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
     switch(currentPage) {
       case 'overview': return <FarmerOverview onPageChange={setCurrentPage} />;
       case 'onboarding': return <FarmerOnboarding onPageChange={setCurrentPage} />;
-      case 'farm-profile': return <FarmerProfile onPageChange={setCurrentPage} />;
-      case 'financing': return <FarmerFinancing onPageChange={setCurrentPage} />;
+      case 'farm-profile': return <FarmerProfile onPageChange={setCurrentPage} onEditProfile={() => setEditProfileModal(true)} />;
+      case 'financing': return <FarmerFinancing onPageChange={setCurrentPage} onApplyFinancing={() => setApplyFinancingModal(true)} />;
       case 'monitoring': return <FarmerMonitoring onPageChange={setCurrentPage} />;
-      case 'documents': return <FarmerDocuments onPageChange={setCurrentPage} />;
+      case 'documents': return <FarmerDocuments onPageChange={setCurrentPage} onUploadDocument={() => setUploadDocumentModal(true)} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} />;
-      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
+      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} onEditProfile={() => setEditProfileModal(true)} />;
       default: return <FarmerOverview onPageChange={setCurrentPage} />;
     }
   };
 
   const renderLenderContent = () => {
     switch(currentPage) {
-      case 'overview': return <LenderOverview onPageChange={setCurrentPage} />;
-      case 'discovery': return <LenderDiscovery onPageChange={setCurrentPage} />;
+      case 'overview': return <LenderOverview onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
+      case 'discovery': return <LenderDiscovery onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
       case 'applications': return <LenderApplications onPageChange={setCurrentPage} />;
       case 'portfolio': return <LenderPortfolio onPageChange={setCurrentPage} />;
       case 'monitoring': return <LenderMonitoring onPageChange={setCurrentPage} />;
       case 'reports': return <LenderReports onPageChange={setCurrentPage} />;
-      case 'products': return <LenderProducts onPageChange={setCurrentPage} />;
+      case 'products': return <LenderProducts onPageChange={setCurrentPage} onProductClick={handleProductClick} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'messages': return <Messages onPageChange={setCurrentPage} />;
-      case 'institution': return <InstitutionProfile onPageChange={setCurrentPage} />;
-      default: return <LenderOverview onPageChange={setCurrentPage} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
+      case 'institution': return <InstitutionProfile onPageChange={setCurrentPage} onEditInstitution={() => setInstitutionModal(true)} />;
+      default: return <LenderOverview onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
     }
   };
 
@@ -143,7 +156,8 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
       case 'portfolio': return <InvestorPortfolio onPageChange={setCurrentPage} />;
       case 'education': return <InvestorEducation onPageChange={setCurrentPage} />;
       case 'feed': return <AgriFeed onPageChange={setCurrentPage} />;
-      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} />;
+      case 'messages': return <Messages onPageChange={setCurrentPage} onNewMessage={() => setNewMessageModal(true)} />;
+      case 'profile': return <UserProfile onPageChange={setCurrentPage} role={role} onEditProfile={() => setEditProfileModal(true)} />;
       default: return <InvestorOverview onPageChange={setCurrentPage} />;
     }
   };
@@ -152,15 +166,26 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
     switch(currentPage) {
       case 'overview': return <AdminOverview onPageChange={setCurrentPage} />;
       case 'kyc': return <AdminKYC onPageChange={setCurrentPage} />;
-      case 'farm-verification': return <AdminFarmVerification onPageChange={setCurrentPage} />;
-      case 'users': return <AdminUsers onPageChange={setCurrentPage} />;
-      case 'institutions': return <AdminInstitutions onPageChange={setCurrentPage} />;
+      case 'farm-verification': return <AdminFarmVerification onPageChange={setCurrentPage} onFarmClick={handleFarmCardClick} />;
+      case 'users': return <AdminUsers onPageChange={setCurrentPage} onAddUser={() => setUserModal(true)} />;
+      case 'institutions': return <AdminInstitutions onPageChange={setCurrentPage} onAddInstitution={() => setInstitutionModal(true)} />;
       case 'content': return <AdminContent onPageChange={setCurrentPage} />;
       case 'reports': return <AdminReports onPageChange={setCurrentPage} />;
       case 'audit': return <AdminAudit onPageChange={setCurrentPage} />;
-      case 'settings': return <AdminSettings onPageChange={setCurrentPage} />;
+      case 'settings': return <AdminSettings onPageChange={setCurrentPage} onOpenSettings={() => setSettingsModal(true)} />;
       default: return <AdminOverview onPageChange={setCurrentPage} />;
     }
+  };
+
+  const handleFarmCardClick = (farmId) => {
+    const farm = farms.find(f => f.id === farmId);
+    setSelectedFarm(farm);
+    setFarmDetailsModal(true);
+  };
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setProductModal(true);
   };
 
   return (
@@ -204,14 +229,25 @@ export default function Dashboard({ role, onLogout, onPageChange }) {
             <input type="text" placeholder="Search..." />
           </div>
           <div className="actions">
-            <button className="btn small ghost"><Bell size={18}/></button>
-            <button className="btn small ghost"><UserRound size={18}/> {roles[role].name}</button>
+            <button className="btn small ghost" onClick={() => console.log('Notifications clicked')}><Bell size={18}/></button>
+            <button className="btn small ghost" onClick={() => onPageChange('profile')}><UserRound size={18}/> {roles[role].name}</button>
           </div>
         </div>
         <div style={{padding: 24}}>
           {renderDashboardContent()}
         </div>
       </main>
+      
+      {/* Modals */}
+      <EditProfileModal isOpen={editProfileModal} onClose={() => setEditProfileModal(false)} role={role} />
+      <ApplyFinancingModal isOpen={applyFinancingModal} onClose={() => setApplyFinancingModal(false)} />
+      <UploadDocumentModal isOpen={uploadDocumentModal} onClose={() => setUploadDocumentModal(false)} />
+      <FarmDetailsModal isOpen={farmDetailsModal} onClose={() => setFarmDetailsModal(false)} farm={selectedFarm} />
+      <NewMessageModal isOpen={newMessageModal} onClose={() => setNewMessageModal(false)} />
+      <ProductModal isOpen={productModal} onClose={() => setProductModal(false)} product={selectedProduct} />
+      <InstitutionModal isOpen={institutionModal} onClose={() => setInstitutionModal(false)} />
+      <UserModal isOpen={userModal} onClose={() => setUserModal(false)} />
+      <SettingsModal isOpen={settingsModal} onClose={() => setSettingsModal(false)} />
     </div>
   );
 }
@@ -264,7 +300,7 @@ function FarmerOverview({ onPageChange }) {
   );
 }
 
-function LenderOverview({ onPageChange }) {
+function LenderOverview({ onPageChange, onFarmClick }) {
   return (
     <div className="grid">
       <div>
@@ -299,7 +335,7 @@ function LenderOverview({ onPageChange }) {
           <h3>Featured Farms</h3>
           <div style={{marginTop:16}}>
             {farms.slice(0,2).map(farm => (
-              <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
+              <FarmCard key={farm.id} farm={farm} onOpen={onFarmClick}/>
             ))}
           </div>
           <button className="btn small" style={{marginTop:16}} onClick={() => onPageChange('discovery')}>Discover More Farms</button>
@@ -338,7 +374,7 @@ function InvestorOverview({ onPageChange }) {
                 <div><b>{opp.target}</b><div className="muted">Target amount</div></div>
                 <div><b>{opp.duration}</b><div className="muted">Duration</div></div>
               </div>
-              <button className="btn small primary" style={{marginTop:16}}>View Details</button>
+              <button className="btn small primary" style={{marginTop:16}} onClick={() => onPageChange('opportunities')}>View Details</button>
             </div>
           ))}
         </div>
@@ -435,7 +471,7 @@ function FarmerOnboarding({ onPageChange }) {
   );
 }
 
-function FarmerProfile({ onPageChange }) {
+function FarmerProfile({ onPageChange, onEditProfile }) {
   return (
     <div className="grid">
       <div className="split">
@@ -443,7 +479,7 @@ function FarmerProfile({ onPageChange }) {
           <h2>My Farm Profile</h2>
           <p className="muted">Manage your farm information and operational details.</p>
         </div>
-        <button className="btn primary">Edit Profile</button>
+        <button className="btn primary" onClick={onEditProfile}>Edit Profile</button>
       </div>
       <div className="card">
         <div className="profile-cover"></div>
@@ -473,16 +509,16 @@ function FarmerProfile({ onPageChange }) {
       <div className="card" style={{marginTop:16}}>
         <h3>Production History</h3>
         <div className="grid cols3" style={{marginTop:16}}>
-          <ChartCard title="Yield Trend" data={[3.1, 4.2, 4.8]} labels={['2024', '2025', '2026']} unit="t/ha"/>
-          <ChartCard title="Revenue" data={[85000, 92000, 98000]} labels={['2024', '2025', '2026']} unit="USD"/>
-          <ChartCard title="Input Costs" data={[32000, 35000, 38000]} labels={['2024', '2025', '2026']} unit="USD"/>
+          <ChartCard title="Yield Trend" data={[3.1, 4.2, 4.8]} labels={['2024', '2025', '2026']} unit="t/ha"></ChartCard>
+          <ChartCard title="Revenue" data={[85000, 92000, 98000]} labels={['2024', '2025', '2026']} unit="USD"></ChartCard>
+          <ChartCard title="Input Costs" data={[32000, 35000, 38000]} labels={['2024', '2025', '2026']} unit="USD"></ChartCard>
         </div>
       </div>
     </div>
   );
 }
 
-function FarmerFinancing({ onPageChange }) {
+function FarmerFinancing({ onPageChange, onApplyFinancing }) {
   return (
     <div className="grid">
       <div className="split">
@@ -490,7 +526,7 @@ function FarmerFinancing({ onPageChange }) {
           <h2>Financing Opportunities</h2>
           <p className="muted">View and manage your financing applications.</p>
         </div>
-        <button className="btn primary">Apply for Financing</button>
+        <button className="btn primary" onClick={onApplyFinancing}>Apply for Financing</button>
       </div>
       <div className="grid cols2">
         <div className="card">
@@ -549,15 +585,15 @@ function FarmerMonitoring({ onPageChange }) {
       <div className="card" style={{marginTop:16}}>
         <h3>Crop Performance</h3>
         <div className="grid cols2" style={{marginTop:16}}>
-          <ChartCard title="Growth Progress" data={[20, 45, 68, 82]} labels={['Week 2', 'Week 4', 'Week 6', 'Week 8']} unit="%"/>
-          <ChartCard title="Yield Projection" data={[3.8, 4.1, 4.5, 4.8]} labels={["Month 1", "Month 2", "Month 3", "Harvest"]} unit="t/ha"/>
+          <ChartCard title="Growth Progress" data={[20, 45, 68, 82]} labels={['Week 2', 'Week 4', 'Week 6', 'Week 8']} unit="%"></ChartCard>
+          <ChartCard title="Yield Projection" data={[3.8, 4.1, 4.5, 4.8]} labels={["Month 1", "Month 2", "Month 3", "Harvest"]} unit="t/ha"></ChartCard>
         </div>
       </div>
     </div>
   );
 }
 
-function FarmerDocuments({ onPageChange }) {
+function FarmerDocuments({ onPageChange, onUploadDocument }) {
   return (
     <div className="grid">
       <div className="split">
@@ -565,7 +601,7 @@ function FarmerDocuments({ onPageChange }) {
           <h2>Documents</h2>
           <p className="muted">Manage your farm documentation and certificates.</p>
         </div>
-        <button className="btn primary">Upload Document</button>
+        <button className="btn primary" onClick={onUploadDocument}>Upload Document</button>
       </div>
       <div className="card">
         <h3>Document Library</h3>
@@ -594,7 +630,7 @@ function FarmerDocuments({ onPageChange }) {
 }
 
 // Lender Pages
-function LenderDiscovery({ onPageChange }) {
+function LenderDiscovery({ onPageChange, onFarmClick }) {
   return (
     <div className="grid">
       <div className="split">
@@ -609,7 +645,7 @@ function LenderDiscovery({ onPageChange }) {
       </div>
       <div className="grid cols3">
         {farms.map(farm => (
-          <FarmCard key={farm.id} farm={farm} onOpen={(id) => console.log('Open farm', id)}/>
+          <FarmCard key={farm.id} farm={farm} onOpen={onFarmClick}/>
         ))}
       </div>
     </div>
@@ -708,8 +744,8 @@ function LenderMonitoring({ onPageChange }) {
         <div className="card">
           <h3>Performance Metrics</h3>
           <div className="grid cols2" style={{marginTop:16}}>
-            <ChartCard title="Repayment Rate" data={[92, 94, 95, 94]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="%"/>
-            <ChartCard title="Portfolio Growth" data={[350, 420, 455, 485]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="k$"/>
+            <ChartCard title="Repayment Rate" data={[92, 94, 95, 94]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="%"></ChartCard>
+            <ChartCard title="Portfolio Growth" data={[350, 420, 455, 485]} labels={['Q1', 'Q2', 'Q3', 'Q4']} unit="k$"></ChartCard>
           </div>
         </div>
       </div>
@@ -725,7 +761,7 @@ function LenderReports({ onPageChange }) {
           <h2>Reports</h2>
           <p className="muted">Generate and view portfolio reports.</p>
         </div>
-        <button className="btn primary">Generate Report</button>
+        <button className="btn primary" onClick={() => console.log('Generate report clicked')}>Generate Report</button>
       </div>
       <div className="card">
         <h3>Available Reports</h3>
@@ -742,7 +778,7 @@ function LenderReports({ onPageChange }) {
                   <b>{report.name}</b>
                   <div className="muted">{report.type} • {report.date}</div>
                 </div>
-                <button className="btn small ghost">Download</button>
+                <button className="btn small ghost" onClick={() => console.log('Download lender report clicked')}>Download</button>
               </div>
             </div>
           ))}
@@ -752,7 +788,14 @@ function LenderReports({ onPageChange }) {
   );
 }
 
-function LenderProducts({ onPageChange }) {
+function LenderProducts({ onPageChange, onProductClick }) {
+  const products = [
+    {name: 'Input Finance Program', rate: '12%', term: '6-12 months', min: '$10,000', max: '$200,000'},
+    {name: 'Working Capital Loan', rate: '14%', term: '3-9 months', min: '$5,000', max: '$100,000'},
+    {name: 'Equipment Financing', rate: '10%', term: '12-24 months', min: '$20,000', max: '$500,000'},
+    {name: 'Seasonal Credit Line', rate: '11%', term: 'Variable', min: '$15,000', max: '$300,000'}
+  ];
+  
   return (
     <div className="grid">
       <div className="split">
@@ -760,15 +803,10 @@ function LenderProducts({ onPageChange }) {
           <h2>Financing Products</h2>
           <p className="muted">Manage your available financing products.</p>
         </div>
-        <button className="btn primary">Add Product</button>
+        <button className="btn primary" onClick={() => onProductClick({})}>Add Product</button>
       </div>
       <div className="grid cols2">
-        {[
-          {name: 'Input Finance Program', rate: '12%', term: '6-12 months', min: '$10,000', max: '$200,000'},
-          {name: 'Working Capital Loan', rate: '14%', term: '3-9 months', min: '$5,000', max: '$100,000'},
-          {name: 'Equipment Financing', rate: '10%', term: '12-24 months', min: '$20,000', max: '$500,000'},
-          {name: 'Seasonal Credit Line', rate: '11%', term: 'Variable', min: '$15,000', max: '$300,000'}
-        ].map((product, i) => (
+        {products.map((product, i) => (
           <div key={i} className="card">
             <h3>{product.name}</h3>
             <div className="grid cols2" style={{marginTop:16}}>
@@ -777,7 +815,7 @@ function LenderProducts({ onPageChange }) {
               <div><b>Minimum</b><div className="muted">{product.min}</div></div>
               <div><b>Maximum</b><div className="muted">{product.max}</div></div>
             </div>
-            <button className="btn small" style={{marginTop:16}}>Edit Product</button>
+            <button className="btn small" style={{marginTop:16}} onClick={() => onProductClick(product)}>Edit Product</button>
           </div>
         ))}
       </div>
@@ -785,7 +823,7 @@ function LenderProducts({ onPageChange }) {
   );
 }
 
-function InstitutionProfile({ onPageChange }) {
+function InstitutionProfile({ onPageChange, onEditInstitution }) {
   return (
     <div className="grid">
       <div className="split">
@@ -793,7 +831,7 @@ function InstitutionProfile({ onPageChange }) {
           <h2>Institution Profile</h2>
           <p className="muted">Manage your lending institution profile.</p>
         </div>
-        <button className="btn primary">Edit Profile</button>
+        <button className="btn primary" onClick={onEditInstitution}>Edit Profile</button>
       </div>
       <div className="card">
         <h3>AgriCredit Zimbabwe</h3>
@@ -849,7 +887,7 @@ function InvestorOpportunities({ onPageChange }) {
               <div className="muted"><b>Risk Level:</b> {opp.risk}</div>
               <div className="muted">{opp.perf}</div>
             </div>
-            <button className="btn small primary" style={{marginTop:16}}>View Details</button>
+            <button className="btn small primary" style={{marginTop:16}} onClick={() => onPageChange('opportunities')}>View Details</button>
           </div>
         ))}
       </div>
@@ -874,7 +912,7 @@ function InvestorSaved({ onPageChange }) {
                   <b>{opp.farm}</b>
                   <div className="muted">{opp.crop} • {opp.target} • {opp.risk}</div>
                 </div>
-                <button className="btn small ghost">Remove</button>
+                <button className="btn small ghost" onClick={() => console.log('Remove saved item clicked')}>Remove</button>
               </div>
             </div>
           ))}
@@ -964,7 +1002,7 @@ function InvestorEducation({ onPageChange }) {
               <div className="muted">{course.category}</div>
               <div className="muted">{course.duration}</div>
             </div>
-            <button className="btn small primary" style={{marginTop:16}}>Start Learning</button>
+            <button className="btn small primary" style={{marginTop:16}} onClick={() => console.log('Start learning clicked')}>Start Learning</button>
           </div>
         ))}
       </div>
@@ -1002,7 +1040,7 @@ function AgriFeed({ onPageChange }) {
   );
 }
 
-function Messages({ onPageChange }) {
+function Messages({ onPageChange, onNewMessage }) {
   return (
     <div className="grid">
       <div className="split">
@@ -1010,7 +1048,7 @@ function Messages({ onPageChange }) {
           <h2>Messages</h2>
           <p className="muted">Communicate with farmers, lenders, and support.</p>
         </div>
-        <button className="btn primary">New Message</button>
+        <button className="btn primary" onClick={onNewMessage}>New Message</button>
       </div>
       <div className="card">
         <h3>Inbox</h3>
@@ -1036,7 +1074,7 @@ function Messages({ onPageChange }) {
   );
 }
 
-function UserProfile({ onPageChange, role }) {
+function UserProfile({ onPageChange, role, onEditProfile }) {
   const userData = roles[role];
   return (
     <div className="grid">
@@ -1045,7 +1083,7 @@ function UserProfile({ onPageChange, role }) {
           <h2>Profile Settings</h2>
           <p className="muted">Manage your account information and preferences.</p>
         </div>
-        <button className="btn primary">Save Changes</button>
+        <button className="btn primary" onClick={onEditProfile}>Edit Profile</button>
       </div>
       <div className="card">
         <h3>Personal Information</h3>
@@ -1071,8 +1109,8 @@ function UserProfile({ onPageChange, role }) {
       <div className="card" style={{marginTop:16}}>
         <h3>Security</h3>
         <div style={{marginTop:16}}>
-          <button className="btn small">Change Password</button>
-          <button className="btn small ghost">Enable Two-Factor Auth</button>
+          <button className="btn small" onClick={() => console.log('Change password clicked')}>Change Password</button>
+          <button className="btn small ghost" onClick={() => console.log('Enable 2FA clicked')}>Enable Two-Factor Auth</button>
         </div>
       </div>
     </div>
@@ -1103,7 +1141,7 @@ function AdminKYC({ onPageChange }) {
                 </div>
                 <div>
                   <StatusBadge status={item.priority}/>
-                  <button className="btn small" style={{marginLeft:8}}>Review</button>
+                  <button className="btn small" style={{marginLeft:8}} onClick={() => console.log('Review KYC item clicked')}>Review</button>
                 </div>
               </div>
             </div>
@@ -1114,7 +1152,7 @@ function AdminKYC({ onPageChange }) {
   );
 }
 
-function AdminFarmVerification({ onPageChange }) {
+function AdminFarmVerification({ onPageChange, onFarmClick }) {
   return (
     <div className="grid">
       <div>
@@ -1133,7 +1171,7 @@ function AdminFarmVerification({ onPageChange }) {
                 </div>
                 <div>
                   <StatusBadge status={farm.status}/>
-                  <button className="btn small" style={{marginLeft:8}}>Review</button>
+                  <button className="btn small" style={{marginLeft:8}} onClick={() => onFarmClick(farm.id)}>Review</button>
                 </div>
               </div>
             </div>
@@ -1144,7 +1182,7 @@ function AdminFarmVerification({ onPageChange }) {
   );
 }
 
-function AdminUsers({ onPageChange }) {
+function AdminUsers({ onPageChange, onAddUser }) {
   return (
     <div className="grid">
       <div className="split">
@@ -1152,7 +1190,7 @@ function AdminUsers({ onPageChange }) {
           <h2>User Management</h2>
           <p className="muted">Manage platform users and access controls.</p>
         </div>
-        <button className="btn primary">Add User</button>
+        <button className="btn primary" onClick={onAddUser}>Add User</button>
       </div>
       <div className="card">
         <h3>All Users</h3>
@@ -1174,7 +1212,7 @@ function AdminUsers({ onPageChange }) {
   );
 }
 
-function AdminInstitutions({ onPageChange }) {
+function AdminInstitutions({ onPageChange, onAddInstitution }) {
   return (
     <div className="grid">
       <div className="split">
@@ -1182,7 +1220,7 @@ function AdminInstitutions({ onPageChange }) {
           <h2>Institution Management</h2>
           <p className="muted">Manage lending institutions and their verification status.</p>
         </div>
-        <button className="btn primary">Add Institution</button>
+        <button className="btn primary" onClick={onAddInstitution}>Add Institution</button>
       </div>
       <div className="card">
         <h3>Registered Institutions</h3>
@@ -1225,8 +1263,8 @@ function AdminContent({ onPageChange }) {
                   <div className="muted">{item.user} • {item.flag} • {item.date}</div>
                 </div>
                 <div>
-                  <button className="btn small ghost">Approve</button>
-                  <button className="btn small ghost" style={{marginLeft:8}}>Reject</button>
+                  <button className="btn small ghost" onClick={() => console.log('Approve content clicked')}>Approve</button>
+                  <button className="btn small ghost" style={{marginLeft:8}} onClick={() => console.log('Reject content clicked')}>Reject</button>
                 </div>
               </div>
             </div>
@@ -1259,7 +1297,7 @@ function AdminReports({ onPageChange }) {
                     <b>{report.name}</b>
                     <div className="muted">{report.period} • {report.generated}</div>
                   </div>
-                  <button className="btn small ghost">Download</button>
+                  <button className="btn small ghost" onClick={() => console.log('Download admin report clicked')}>Download</button>
                 </div>
               </div>
             ))}
@@ -1321,7 +1359,7 @@ function AdminAudit({ onPageChange }) {
   );
 }
 
-function AdminSettings({ onPageChange }) {
+function AdminSettings({ onPageChange, onOpenSettings }) {
   return (
     <div className="grid">
       <div className="split">
@@ -1329,7 +1367,7 @@ function AdminSettings({ onPageChange }) {
           <h2>Platform Settings</h2>
           <p className="muted">Configure system-wide settings and preferences.</p>
         </div>
-        <button className="btn primary">Save Settings</button>
+        <button className="btn primary" onClick={onOpenSettings}>Save Settings</button>
       </div>
       <div className="grid cols2">
         <div className="card">
@@ -1374,5 +1412,651 @@ function AdminSettings({ onPageChange }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// Modal Components
+function EditProfileModal({ isOpen, onClose, role }) {
+  const userData = roles[role];
+  const [formData, setFormData] = React.useState({
+    name: userData.name,
+    email: userData.email,
+    phone: '',
+    role: userData.label
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Profile updated:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Profile">
+      <form onSubmit={handleSubmit}>
+        <div style={{marginBottom: 16}}>
+          <label>Full Name</label>
+          <input 
+            type="text" 
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Email</label>
+          <input 
+            type="email" 
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Role</label>
+          <input 
+            type="text" 
+            value={formData.role}
+            disabled
+            style={{width:'100%',padding:8,marginTop:4,background:'#f5f5f5'}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Phone</label>
+          <input 
+            type="tel" 
+            value={formData.phone}
+            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            placeholder="+263..."
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">Save Changes</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function ApplyFinancingModal({ isOpen, onClose }) {
+  const [formData, setFormData] = React.useState({
+    amount: '',
+    purpose: '',
+    duration: '',
+    lender: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Financing application submitted:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Apply for Financing" size="large">
+      <form onSubmit={handleSubmit}>
+        <div className="grid cols2" style={{marginBottom: 16}}>
+          <div>
+            <label>Amount Required</label>
+            <input 
+              type="text" 
+              value={formData.amount}
+              onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              placeholder="$10,000"
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+          <div>
+            <label>Duration</label>
+            <input 
+              type="text" 
+              value={formData.duration}
+              onChange={(e) => setFormData({...formData, duration: e.target.value})}
+              placeholder="6-12 months"
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Purpose</label>
+          <textarea 
+            value={formData.purpose}
+            onChange={(e) => setFormData({...formData, purpose: e.target.value})}
+            placeholder="Describe how you plan to use the financing..."
+            style={{width:'100%',padding:8,marginTop:4,minHeight:'80px'}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Preferred Lender</label>
+          <select 
+            value={formData.lender}
+            onChange={(e) => setFormData({...formData, lender: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          >
+            <option value="">Select a lender...</option>
+            {institutions.map((inst, i) => (
+              <option key={i} value={inst.name}>{inst.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">Submit Application</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function UploadDocumentModal({ isOpen, onClose }) {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    type: '',
+    file: null
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Document uploaded:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Upload Document">
+      <form onSubmit={handleSubmit}>
+        <div style={{marginBottom: 16}}>
+          <label>Document Name</label>
+          <input 
+            type="text" 
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="e.g., Title Deed, Production Records"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Document Type</label>
+          <select 
+            value={formData.type}
+            onChange={(e) => setFormData({...formData, type: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          >
+            <option value="">Select type...</option>
+            <option value="identity">Identity</option>
+            <option value="tenure">Land Tenure</option>
+            <option value="infrastructure">Infrastructure</option>
+            <option value="market">Market Evidence</option>
+            <option value="history">Production History</option>
+          </select>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>File</label>
+          <div style={{
+            border: '2px dashed #e4ded2',
+            borderRadius: '12px',
+            padding: '24px',
+            textAlign: 'center',
+            background: '#f8f9fa'
+          }}>
+            <Upload size={32} color="#66736b" style={{marginBottom: 8}}/>
+            <div className="muted">Click to upload or drag and drop</div>
+            <input 
+              type="file" 
+              onChange={(e) => setFormData({...formData, file: e.target.files[0]})}
+              style={{width:'100%',marginTop:8}}
+            />
+          </div>
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">Upload Document</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function FarmDetailsModal({ isOpen, onClose, farm }) {
+  if (!farm) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Farm Details: ${farm.name}`} size="large">
+      <div className="card" style={{background: '#f8f9fa', marginBottom: 16}}>
+        <div className="split">
+          <div>
+            <h3>{farm.name}</h3>
+            <p className="muted">{farm.loc}</p>
+          </div>
+          <StatusBadge status={farm.status}/>
+        </div>
+      </div>
+      
+      <div className="grid cols2" style={{marginBottom: 16}}>
+        <div>
+          <b>Farmer</b>
+          <div className="muted">{farm.farmer}</div>
+        </div>
+        <div>
+          <b>Location</b>
+          <div className="muted">{farm.province}, {farm.district}</div>
+        </div>
+        <div>
+          <b>Primary Crop</b>
+          <div className="muted">{farm.crop}</div>
+        </div>
+        <div>
+          <b>Farm Size</b>
+          <div className="muted">{farm.size} hectares</div>
+        </div>
+        <div>
+          <b>Financing Need</b>
+          <div className="muted">{money(farm.need)}</div>
+        </div>
+        <div>
+          <b>Readiness Score</b>
+          <div className="muted">{farm.score}%</div>
+        </div>
+      </div>
+
+      <div style={{marginBottom: 16}}>
+        <h4>Additional Information</h4>
+        <div className="grid cols2" style={{marginTop: 8}}>
+          <div>
+            <b>Land Tenure</b>
+            <div className="muted">{farm.tenure}</div>
+          </div>
+          <div>
+            <b>Irrigation</b>
+            <div className="muted">{farm.irrigation}</div>
+          </div>
+          <div>
+            <b>Offtaker Status</b>
+            <div className="muted">{farm.offtaker}</div>
+          </div>
+          <div>
+            <b>Documents</b>
+            <div className="muted">{farm.docs} uploaded</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{marginBottom: 16}}>
+        <h4>Production History</h4>
+        <div className="muted" style={{marginTop: 8}}>
+          {farm.history.map((yieldVal, i) => `${2024 + i}: ${yieldVal} t/ha`).join(' • ')}
+        </div>
+      </div>
+
+      <div className="split" style={{marginTop: 20}}>
+        <button className="btn ghost" onClick={onClose}>Close</button>
+        <button className="btn primary" onClick={() => console.log('Contact farmer:', farm.farmer)}>
+          Contact Farmer
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+function NewMessageModal({ isOpen, onClose }) {
+  const [formData, setFormData] = React.useState({
+    to: '',
+    subject: '',
+    message: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Message sent:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="New Message" size="large">
+      <form onSubmit={handleSubmit}>
+        <div style={{marginBottom: 16}}>
+          <label>To</label>
+          <select 
+            value={formData.to}
+            onChange={(e) => setFormData({...formData, to: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          >
+            <option value="">Select recipient...</option>
+            <option value="AgriCredit Zimbabwe">AgriCredit Zimbabwe</option>
+            <option value="FarmLink Support">FarmLink Support</option>
+            <option value="Ruvimbo Ncube">Ruvimbo Ncube</option>
+          </select>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Subject</label>
+          <input 
+            type="text" 
+            value={formData.subject}
+            onChange={(e) => setFormData({...formData, subject: e.target.value})}
+            placeholder="Enter subject..."
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Message</label>
+          <textarea 
+            value={formData.message}
+            onChange={(e) => setFormData({...formData, message: e.target.value})}
+            placeholder="Type your message..."
+            style={{width:'100%',padding:8,marginTop:4,minHeight:'120px'}}
+          />
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">
+            <Send size={16} style={{marginRight: 8}}/> Send Message
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function ProductModal({ isOpen, onClose, product }) {
+  const isNew = !product || !product.name;
+  const [formData, setFormData] = React.useState(product || {
+    name: '',
+    rate: '',
+    term: '',
+    min: '',
+    max: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Product saved:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={isNew ? 'Add Product' : 'Edit Product'}>
+      <form onSubmit={handleSubmit}>
+        <div style={{marginBottom: 16}}>
+          <label>Product Name</label>
+          <input 
+            type="text" 
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="e.g., Input Finance Program"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div className="grid cols2" style={{marginBottom: 16}}>
+          <div>
+            <label>Interest Rate</label>
+            <input 
+              type="text" 
+              value={formData.rate}
+              onChange={(e) => setFormData({...formData, rate: e.target.value})}
+              placeholder="12%"
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+          <div>
+            <label>Term</label>
+            <input 
+              type="text" 
+              value={formData.term}
+              onChange={(e) => setFormData({...formData, term: e.target.value})}
+              placeholder="6-12 months"
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+        </div>
+        <div className="grid cols2" style={{marginBottom: 16}}>
+          <div>
+            <label>Minimum Amount</label>
+            <input 
+              type="text" 
+              value={formData.min}
+              onChange={(e) => setFormData({...formData, min: e.target.value})}
+              placeholder="$10,000"
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+          <div>
+            <label>Maximum Amount</label>
+            <input 
+              type="text" 
+              value={formData.max}
+              onChange={(e) => setFormData({...formData, max: e.target.value})}
+              placeholder="$200,000"
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">
+            {isNew ? 'Add Product' : 'Save Changes'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function InstitutionModal({ isOpen, onClose }) {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    type: '',
+    focus: '',
+    regions: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Institution added:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Institution">
+      <form onSubmit={handleSubmit}>
+        <div style={{marginBottom: 16}}>
+          <label>Institution Name</label>
+          <input 
+            type="text" 
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="e.g., AgriBank Zimbabwe"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Institution Type</label>
+          <select 
+            value={formData.type}
+            onChange={(e) => setFormData({...formData, type: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          >
+            <option value="">Select type...</option>
+            <option value="agricultural_lender">Agricultural Lender</option>
+            <option value="microfinance">Microfinance</option>
+            <option value="insurance">Insurance</option>
+            <option value="commercial_bank">Commercial Bank</option>
+          </select>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Focus Areas</label>
+          <input 
+            type="text" 
+            value={formData.focus}
+            onChange={(e) => setFormData({...formData, focus: e.target.value})}
+            placeholder="e.g., Input finance, working capital"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Coverage Regions</label>
+          <input 
+            type="text" 
+            value={formData.regions}
+            onChange={(e) => setFormData({...formData, regions: e.target.value})}
+            placeholder="e.g., National, Mashonaland, Midlands"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">Add Institution</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function UserModal({ isOpen, onClose }) {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    role: 'farmer'
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('User added:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Add User">
+      <form onSubmit={handleSubmit}>
+        <div style={{marginBottom: 16}}>
+          <label>Full Name</label>
+          <input 
+            type="text" 
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="e.g., John Doe"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Email</label>
+          <input 
+            type="email" 
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            placeholder="e.g., john@example.com"
+            style={{width:'100%',padding:8,marginTop:4}}
+          />
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Role</label>
+          <select 
+            value={formData.role}
+            onChange={(e) => setFormData({...formData, role: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          >
+            <option value="farmer">Farmer</option>
+            <option value="lender">Lender</option>
+            <option value="investor">Investor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">Add User</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function SettingsModal({ isOpen, onClose }) {
+  const [formData, setFormData] = React.useState({
+    platformName: 'FarmLink',
+    supportEmail: 'support@farmlink.local',
+    currency: 'USD',
+    require2FA: true,
+    enableAudit: true,
+    autoLogout: true
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Settings saved:', formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Platform Settings" size="large">
+      <form onSubmit={handleSubmit}>
+        <div className="grid cols2" style={{marginBottom: 16}}>
+          <div>
+            <label>Platform Name</label>
+            <input 
+              type="text" 
+              value={formData.platformName}
+              onChange={(e) => setFormData({...formData, platformName: e.target.value})}
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+          <div>
+            <label>Support Email</label>
+            <input 
+              type="email" 
+              value={formData.supportEmail}
+              onChange={(e) => setFormData({...formData, supportEmail: e.target.value})}
+              style={{width:'100%',padding:8,marginTop:4}}
+            />
+          </div>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label>Default Currency</label>
+          <select 
+            value={formData.currency}
+            onChange={(e) => setFormData({...formData, currency: e.target.value})}
+            style={{width:'100%',padding:8,marginTop:4}}
+          >
+            <option value="USD">USD - US Dollar</option>
+            <option value="ZWL">ZWL - Zimbabwe Dollar</option>
+          </select>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <h4>Security Settings</h4>
+          <div style={{marginTop: 8}}>
+            <label style={{display: 'flex', alignItems: 'center', marginBottom: 12}}>
+              <input 
+                type="checkbox" 
+                checked={formData.require2FA}
+                onChange={(e) => setFormData({...formData, require2FA: e.target.checked})}
+                style={{marginRight: 8}}
+              />
+              Require two-factor authentication
+            </label>
+            <label style={{display: 'flex', alignItems: 'center', marginBottom: 12}}>
+              <input 
+                type="checkbox" 
+                checked={formData.enableAudit}
+                onChange={(e) => setFormData({...formData, enableAudit: e.target.checked})}
+                style={{marginRight: 8}}
+              />
+              Enable audit logging
+            </label>
+            <label style={{display: 'flex', alignItems: 'center'}}>
+              <input 
+                type="checkbox" 
+                checked={formData.autoLogout}
+                onChange={(e) => setFormData({...formData, autoLogout: e.target.checked})}
+                style={{marginRight: 8}}
+              />
+              Auto-logout after inactivity
+            </label>
+          </div>
+        </div>
+        <div className="split" style={{marginTop: 20}}>
+          <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn primary">Save Settings</button>
+        </div>
+      </form>
+    </Modal>
   );
 }
