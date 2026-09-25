@@ -11,7 +11,7 @@ const roles = {
 };
 
 const farms = [
-  {id:1,name:'Nyika Plains Farm',farmer:'Tendai Moyo',loc:'Mazowe, Mashonaland Central',province:'Mashonaland Central',district:'Mazowe',crop:'Maize',size:120,need:85000,ready:'Strong',status:'Field Verification',date:'18 Aug 2026',tenure:'A2 offer letter',irrigation:'Borehole + pivot',offtaker:'Confirmed',score:82,history:[3.1,4.2,4.8],docs:5},
+  {id:1,name:'Nyika Plains Farm',farmer:'Tendai Moyo',loc:'Mazowe, Mashonaland Central',province:'Mashonaland Central',district:'Mazowe',crop:'Maize',size:120,need:5000,ready:'Strong',status:'Field Verification',date:'18 Aug 2026',tenure:'A2 offer letter',irrigation:'Borehole + pivot',offtaker:'Confirmed',score:82,history:[3.1,4.2,4.8],docs:5},
   {id:2,name:'Mupfure Agri Estate',farmer:'Grace Chirwa',loc:'Chegutu, Mashonaland West',province:'Mashonaland West',district:'Chegutu',crop:'Soybeans',size:210,need:8000,ready:'Strong',status:'Verified',date:'02 Aug 2026',tenure:'Lease',irrigation:'Dam access',offtaker:'Contracted',score:88,history:[2.2,2.8,3.3],docs:7},
   {id:3,name:'Green Valley Produce',farmer:'Farai Nyathi',loc:'Mutare, Manicaland',province:'Manicaland',district:'Mutare',crop:'Horticulture',size:38,need:42000,ready:'Moderate',status:'Document Review',date:'11 Aug 2026',tenure:'Communal/customary',irrigation:'Drip lines',offtaker:'Buyer letters',score:68,history:[1.4,1.6,1.9],docs:4},
   {id:4,name:'Umfuli Grain & Livestock',farmer:'Blessing Sibanda',loc:'Kwekwe, Midlands',province:'Midlands',district:'Kwekwe',crop:'Wheat',size:175,need:120000,ready:'Moderate',status:'Submitted',date:'06 Aug 2026',tenure:'Lease',irrigation:'Seasonal river',offtaker:'Pending',score:61,history:[2.7,3.0,2.9],docs:3},
@@ -497,8 +497,8 @@ function FarmerFinancing({ onPageChange }) {
           <h3>Active Applications</h3>
           <div style={{marginTop:16}}>
             {[
-              {lender: 'AgriCredit Zimbabwe', amount: '$85,000', status: 'Under Review', date: '18 Aug 2026'},
-              {lender: 'Zambezi Microfinance', amount: '$42,000', status: 'Approved', date: '11 Aug 2026'}
+              {lender: 'AgriCredit Zimbabwe', amount: '$5,000', status: 'Under Review', date: '18 Aug 2026'},
+              {lender: 'Zambezi Microfinance', amount: '$4,000', status: 'Approved', date: '11 Aug 2026'}
             ].map((app, i) => (
               <div key={i} style={{padding:'12px 0',borderBottom:'1px solid #f0f0f0'}}>
                 <div className="split">
